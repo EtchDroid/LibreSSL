@@ -1,3 +1,28 @@
+if(HOST_ASM_ELF_ARMV4)
+	set(
+		ASM_ARMV4_ELF_SRC
+		aes/aes-elf-armv4.S
+		bn/gf2m-elf-armv4.S
+		bn/mont-elf-armv4.S
+		sha/sha1-elf-armv4.S
+		sha/sha512-elf-armv4.S
+		sha/sha256-elf-armv4.S
+		modes/ghash-elf-armv4.S
+		armv4cpuid.S
+		armcap.c
+	)
+	add_definitions(-DAES_ASM)
+	add_definitions(-DOPENSSL_BN_ASM_MONT)
+	add_definitions(-DOPENSSL_BN_ASM_GF2m)
+	add_definitions(-DGHASH_ASM)
+	add_definitions(-DSHA1_ASM)
+	add_definitions(-DSHA256_ASM)
+	add_definitions(-DSHA512_ASM)
+	add_definitions(-DOPENSSL_CPUID_OBJ)
+	set(CRYPTO_SRC ${CRYPTO_SRC} ${ASM_ARMV4_ELF_SRC})
+	set_property(SOURCE ${ASM_ARMV4_ELF_SRC} PROPERTY LANGUAGE C)
+endif()
+
 if(HOST_ASM_ELF_X86_64)
 	set(
 		ASM_X86_64_ELF_SRC
@@ -120,7 +145,6 @@ set(
 	aes/aes_wrap.c
 	asn1/a_bitstr.c
 	asn1/a_bool.c
-	asn1/a_bytes.c
 	asn1/a_d2i_fp.c
 	asn1/a_digest.c
 	asn1/a_dup.c
@@ -131,7 +155,6 @@ set(
 	asn1/a_object.c
 	asn1/a_octet.c
 	asn1/a_print.c
-	asn1/a_set.c
 	asn1/a_sign.c
 	asn1/a_strex.c
 	asn1/a_strnid.c
@@ -424,6 +447,7 @@ set(
 	evp/m_sha1.c
 	evp/m_sigver.c
 	evp/m_streebog.c
+	evp/m_sm3.c
 	evp/m_wp.c
 	evp/names.c
 	evp/p5_crpt.c
@@ -558,6 +582,7 @@ set(
 	sha/sha1dgst.c
 	sha/sha256.c
 	sha/sha512.c
+	sm3/sm3.c
 	stack/stack.c
 	ts/ts_asn1.c
 	ts/ts_conf.c
@@ -637,12 +662,14 @@ set(
 )
 
 if(UNIX)
+	set(CRYPTO_SRC ${CRYPTO_SRC} crypto_lock.c)
 	set(CRYPTO_SRC ${CRYPTO_SRC} bio/b_posix.c)
 	set(CRYPTO_SRC ${CRYPTO_SRC} bio/bss_log.c)
 	set(CRYPTO_SRC ${CRYPTO_SRC} ui/ui_openssl.c)
 endif()
 
 if(WIN32)
+	set(CRYPTO_SRC ${CRYPTO_SRC} crypto_lock_win.c)
 	set(CRYPTO_SRC ${CRYPTO_SRC} bio/b_win.c)
 	set(CRYPTO_UNEXPORT ${CRYPTO_UNEXPORT} BIO_s_log)
 	set(CRYPTO_SRC ${CRYPTO_SRC} ui/ui_openssl_win.c)

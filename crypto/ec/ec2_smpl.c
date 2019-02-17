@@ -1,4 +1,4 @@
-/* $OpenBSD: ec2_smpl.c,v 1.20.2.1 2018/11/17 18:55:41 tb Exp $ */
+/* $OpenBSD: ec2_smpl.c,v 1.21 2018/11/05 20:18:21 tb Exp $ */
 /* ====================================================================
  * Copyright 2002 Sun Microsystems, Inc. ALL RIGHTS RESERVED.
  *

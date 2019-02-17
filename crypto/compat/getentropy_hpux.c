@@ -1,4 +1,4 @@
-/*	$OpenBSD: getentropy_hpux.c,v 1.5.8.1 2018/12/15 15:10:12 bcook Exp $	*/
+/*	$OpenBSD: getentropy_hpux.c,v 1.6 2018/11/20 08:04:28 deraadt Exp $	*/
 
 /*
  * Copyright (c) 2014 Theo de Raadt <deraadt@openbsd.org>

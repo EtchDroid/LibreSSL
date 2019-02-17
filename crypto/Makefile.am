@@ -192,9 +192,11 @@ include Makefile.am.arc4random
 libcrypto_la_SOURCES =
 EXTRA_libcrypto_la_SOURCES =
 
+include Makefile.am.elf-arm
 include Makefile.am.elf-x86_64
 include Makefile.am.macosx-x86_64
 
+if !HOST_ASM_ELF_ARM
 if !HOST_ASM_ELF_X86_64
 if !HOST_ASM_MACOSX_X86_64
 libcrypto_la_SOURCES += aes/aes_cbc.c
@@ -206,10 +208,16 @@ libcrypto_la_SOURCES += rc4/rc4_skey.c
 libcrypto_la_SOURCES += whrlpool/wp_block.c
 endif
 endif
+endif
 
 libcrypto_la_SOURCES += cpt_err.c
 libcrypto_la_SOURCES += cryptlib.c
 libcrypto_la_SOURCES += crypto_init.c
+if !HOST_WIN
+libcrypto_la_SOURCES += crypto_lock.c
+else
+libcrypto_la_SOURCES += crypto_lock_win.c
+endif
 libcrypto_la_SOURCES += cversion.c
 libcrypto_la_SOURCES += ex_data.c
 libcrypto_la_SOURCES += malloc-wrapper.c
@@ -237,7 +245,6 @@ noinst_HEADERS += aes/aes_locl.h
 # asn1
 libcrypto_la_SOURCES += asn1/a_bitstr.c
 libcrypto_la_SOURCES += asn1/a_bool.c
-libcrypto_la_SOURCES += asn1/a_bytes.c
 libcrypto_la_SOURCES += asn1/a_d2i_fp.c
 libcrypto_la_SOURCES += asn1/a_digest.c
 libcrypto_la_SOURCES += asn1/a_dup.c
@@ -248,7 +255,6 @@ libcrypto_la_SOURCES += asn1/a_mbstr.c
 libcrypto_la_SOURCES += asn1/a_object.c
 libcrypto_la_SOURCES += asn1/a_octet.c
 libcrypto_la_SOURCES += asn1/a_print.c
-libcrypto_la_SOURCES += asn1/a_set.c
 libcrypto_la_SOURCES += asn1/a_sign.c
 libcrypto_la_SOURCES += asn1/a_strex.c
 libcrypto_la_SOURCES += asn1/a_strnid.c
@@ -614,6 +620,7 @@ libcrypto_la_SOURCES += evp/m_ripemd.c
 libcrypto_la_SOURCES += evp/m_sha1.c
 libcrypto_la_SOURCES += evp/m_sigver.c
 libcrypto_la_SOURCES += evp/m_streebog.c
+libcrypto_la_SOURCES += evp/m_sm3.c
 libcrypto_la_SOURCES += evp/m_wp.c
 libcrypto_la_SOURCES += evp/names.c
 libcrypto_la_SOURCES += evp/p5_crpt.c
@@ -805,6 +812,10 @@ libcrypto_la_SOURCES += sha/sha1dgst.c
 libcrypto_la_SOURCES += sha/sha256.c
 libcrypto_la_SOURCES += sha/sha512.c
 noinst_HEADERS += sha/sha_locl.h
+
+# sm3
+libcrypto_la_SOURCES += sm3/sm3.c
+noinst_HEADERS += sm3/sm3_locl.h
 
 # stack
 libcrypto_la_SOURCES += stack/stack.c

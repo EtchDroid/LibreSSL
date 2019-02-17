@@ -1,4 +1,4 @@
-/* $OpenBSD: ecp_smpl.c,v 1.22.2.1 2018/11/17 18:55:41 tb Exp $ */
+/* $OpenBSD: ecp_smpl.c,v 1.29 2018/11/15 05:53:31 tb Exp $ */
 /* Includes code written by Lenka Fibikova <fibikova@exp-math.uni-essen.de>
  * for the OpenSSL project.
  * Includes code written by Bodo Moeller for the OpenSSL project.
@@ -1434,10 +1434,8 @@ ec_GFp_simple_blind_coordinates(const EC_GROUP *group, EC_POINT *p, BN_CTX *ctx)
 		goto err;
 
 	/* Generate lambda in [1, group->field - 1] */
-	do {
-		if (!BN_rand_range(lambda, &group->field))
-			goto err;
-	} while (BN_is_zero(lambda));
+	if (!bn_rand_interval(lambda, BN_value_one(), &group->field))
+		goto err;
 
 	if (group->meth->field_encode != NULL &&
 	    !group->meth->field_encode(group, lambda, lambda, ctx))
@@ -1558,8 +1556,8 @@ ec_GFp_simple_mul_ct(const EC_GROUP *group, EC_POINT *r, const BIGNUM *scalar,
 	 */
 	cardinality_bits = BN_num_bits(cardinality);
 	group_top = cardinality->top;
-	if ((bn_wexpand(k, group_top + 1) == NULL) ||
-	    (bn_wexpand(lambda, group_top + 1) == NULL))
+	if ((bn_wexpand(k, group_top + 2) == NULL) ||
+	    (bn_wexpand(lambda, group_top + 2) == NULL))
 		goto err;
 
 	if (!BN_copy(k, scalar))
@@ -1586,7 +1584,7 @@ ec_GFp_simple_mul_ct(const EC_GROUP *group, EC_POINT *r, const BIGNUM *scalar,
 	 * k := scalar + 2*cardinality
 	 */
 	kbit = BN_is_bit_set(lambda, cardinality_bits);
-	if (!BN_swap_ct(kbit, k, lambda, group_top + 1))
+	if (!BN_swap_ct(kbit, k, lambda, group_top + 2))
 		goto err;
 
 	group_top = group->field.top;

@@ -3895,6 +3895,16 @@
 #define NID_id_GostR3410_2001_ParamSet_cc		854
 #define OBJ_id_GostR3410_2001_ParamSet_cc		OBJ_cryptocom,1L,8L,1L
 
+#define SN_sm3		"SM3"
+#define LN_sm3		"sm3"
+#define NID_sm3		968
+#define OBJ_sm3		1L,2L,156L,10197L,1L,401L
+
+#define SN_sm3WithRSAEncryption		"RSA-SM3"
+#define LN_sm3WithRSAEncryption		"sm3WithRSAEncryption"
+#define NID_sm3WithRSAEncryption		969
+#define OBJ_sm3WithRSAEncryption		1L,2L,156L,10197L,1L,501L
+
 #define SN_camellia_128_cbc		"CAMELLIA-128-CBC"
 #define LN_camellia_128_cbc		"camellia-128-cbc"
 #define NID_camellia_128_cbc		751

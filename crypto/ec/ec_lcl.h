@@ -1,4 +1,4 @@
-/* $OpenBSD: ec_lcl.h,v 1.10.2.1 2018/11/17 18:55:41 tb Exp $ */
+/* $OpenBSD: ec_lcl.h,v 1.11 2018/11/05 20:18:21 tb Exp $ */
 /*
  * Originally written by Bodo Moeller for the OpenSSL project.
  */

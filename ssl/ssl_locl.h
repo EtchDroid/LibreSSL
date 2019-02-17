@@ -1,4 +1,4 @@
-/* $OpenBSD: ssl_locl.h,v 1.215 2018/09/08 14:29:52 jsing Exp $ */
+/* $OpenBSD: ssl_locl.h,v 1.225 2018/11/21 15:13:29 jsing Exp $ */
 /* Copyright (C) 1995-1998 Eric Young (eay@cryptsoft.com)
  * All rights reserved.
  *
@@ -161,6 +161,7 @@
 #include <openssl/stack.h>
 
 #include "bytestring.h"
+#include "ssl_sigalgs.h"
 
 __BEGIN_HIDDEN_DECLS
 
@@ -208,6 +209,7 @@ __BEGIN_HIDDEN_DECLS
 #define SSL_kDHE		0x00000008L /* tmp DH key no DH cert */
 #define SSL_kECDHE		0x00000080L /* ephemeral ECDH */
 #define SSL_kGOST		0x00000200L /* GOST key exchange */
+#define SSL_kTLS1_3		0x00000400L /* TLSv1.3 key exchange */
 
 /* Bits for algorithm_auth (server authentication) */
 #define SSL_aRSA		0x00000001L /* RSA auth */
@@ -215,6 +217,7 @@ __BEGIN_HIDDEN_DECLS
 #define SSL_aNULL 		0x00000004L /* no auth (i.e. use ADH or AECDH) */
 #define SSL_aECDSA              0x00000040L /* ECDSA auth*/
 #define SSL_aGOST01 		0x00000200L /* GOST R 34.10-2001 signature auth */
+#define SSL_aTLS1_3		0x00000400L /* TLSv1.3 authentication */
 
 /* Bits for algorithm_enc (symmetric encryption) */
 #define SSL_DES			0x00000001L
@@ -251,6 +254,7 @@ __BEGIN_HIDDEN_DECLS
 #define SSL_SSLV3		0x00000002L
 #define SSL_TLSV1		SSL_SSLV3	/* for now */
 #define SSL_TLSV1_2		0x00000004L
+#define SSL_TLSV1_3		0x00000008L
 
 
 /* Bits for algorithm2 (handshake digests and other extra flags) */
@@ -748,6 +752,14 @@ typedef struct ssl3_state_internal_st {
 	int write_mac_secret_size;
 	unsigned char write_mac_secret[EVP_MAX_MD_SIZE];
 
+	SSL3_BUFFER rbuf;	/* read IO goes into here */
+	SSL3_BUFFER wbuf;	/* write IO goes into here */
+
+	/* we allow one fatal and one warning alert to be outstanding,
+	 * send close alert via the warning alert */
+	int alert_dispatch;
+	unsigned char send_alert[2];
+
 	/* flags for countermeasure against known-IV weakness */
 	int need_empty_fragments;
 	int empty_fragment_done;
@@ -769,8 +781,8 @@ typedef struct ssl3_state_internal_st {
 	int wpend_ret;		/* number of bytes submitted */
 	const unsigned char *wpend_buf;
 
-	/* used during startup, digest all incoming/outgoing packets */
-	BIO *handshake_buffer;
+	/* Transcript of handshake messages that have been sent and received. */
+	BUF_MEM *handshake_transcript;
 
 	/* Rolling hash of handshake messages. */
 	EVP_MD_CTX *handshake_hash;
@@ -793,6 +805,8 @@ typedef struct ssl3_state_internal_st {
 	SSL_HANDSHAKE hs;
 
 	struct	{
+		int new_mac_secret_size;
+
 		/* actually only needs to be 16+20 */
 		unsigned char cert_verify_md[EVP_MAX_MD_SIZE*2];
 
@@ -917,8 +931,8 @@ typedef struct dtls1_state_internal_st {
 typedef struct cert_pkey_st {
 	X509 *x509;
 	EVP_PKEY *privatekey;
-	/* Digest to use when signing */
-	const EVP_MD *digest;
+	/* sigalg to use when signing */
+	const struct ssl_sigalg *sigalg;
 } CERT_PKEY;
 
 typedef struct cert_st {
@@ -936,8 +950,6 @@ typedef struct cert_st {
 	DH *dh_tmp;
 	DH *(*dh_tmp_cb)(SSL *ssl, int is_export, int keysize);
 	int dh_tmp_auto;
-
-	EC_KEY *ecdh_tmp;
 
 	CERT_PKEY pkeys[SSL_PKEY_NUM];
 
@@ -1037,7 +1049,6 @@ void ssl_clear_cipher_write_state(SSL *s);
 int ssl_clear_bad_session(SSL *s);
 CERT *ssl_cert_new(void);
 CERT *ssl_cert_dup(CERT *cert);
-int ssl_cert_inst(CERT **o);
 void ssl_cert_free(CERT *c);
 SESS_CERT *ssl_sess_cert_new(void);
 void ssl_sess_cert_free(SESS_CERT *sc);
@@ -1066,7 +1077,8 @@ int ssl_undefined_void_function(void);
 int ssl_undefined_const_function(const SSL *s);
 CERT_PKEY *ssl_get_server_send_pkey(const SSL *s);
 X509 *ssl_get_server_send_cert(const SSL *);
-EVP_PKEY *ssl_get_sign_pkey(SSL *s, const SSL_CIPHER *c, const EVP_MD **pmd);
+EVP_PKEY *ssl_get_sign_pkey(SSL *s, const SSL_CIPHER *c, const EVP_MD **pmd,
+    const struct ssl_sigalg **sap);
 DH *ssl_get_auto_dh(SSL *s);
 int ssl_cert_type(X509 *x, EVP_PKEY *pkey);
 void ssl_set_cert_masks(CERT *c, const SSL_CIPHER *cipher);
@@ -1228,11 +1240,15 @@ int tls1_handshake_hash_value(SSL *s, const unsigned char *out, size_t len,
     size_t *outlen);
 void tls1_handshake_hash_free(SSL *s);
 
-int tls1_init_finished_mac(SSL *s);
-int tls1_finish_mac(SSL *s, const unsigned char *buf, int len);
-void tls1_free_digest_list(SSL *s);
+int tls1_transcript_init(SSL *s);
+void tls1_transcript_free(SSL *s);
+void tls1_transcript_reset(SSL *s);
+int tls1_transcript_append(SSL *s, const unsigned char *buf, size_t len);
+int tls1_transcript_data(SSL *s, const unsigned char **data, size_t *len);
+void tls1_transcript_freeze(SSL *s);
+int tls1_transcript_record(SSL *s, const unsigned char *buf, size_t len);
+
 void tls1_cleanup_key_block(SSL *s);
-int tls1_digest_cached_records(SSL *s);
 int tls1_change_cipher_state(SSL *s, int which);
 int tls1_setup_key_block(SSL *s);
 int tls1_enc(SSL *s, int snd);
@@ -1249,14 +1265,19 @@ int ssl_ok(SSL *s);
 int ssl_using_ecc_cipher(SSL *s);
 int ssl_check_srvr_ecc_cert_and_alg(X509 *x, SSL *s);
 
+void tls1_get_formatlist(SSL *s, int client_formats, const uint8_t **pformats,
+    size_t *pformatslen);
+void tls1_get_group_list(SSL *s, int client_groups, const uint16_t **pgroups,
+    size_t *pgroupslen);
+
 int tls1_set_groups(uint16_t **out_group_ids, size_t *out_group_ids_len,
     const int *groups, size_t ngroups);
-int tls1_set_groups_list(uint16_t **out_group_ids, size_t *out_group_ids_len,
+int tls1_set_group_list(uint16_t **out_group_ids, size_t *out_group_ids_len,
     const char *groups);
 
 int tls1_ec_curve_id2nid(const uint16_t curve_id);
 uint16_t tls1_ec_nid2curve_id(const int nid);
-int tls1_check_curve(SSL *s, const uint16_t curve_id);
+int tls1_check_curve(SSL *s, const uint16_t group_id);
 int tls1_get_shared_curve(SSL *s);
 
 int ssl_parse_serverhello_tlsext(SSL *s, unsigned char **data,
@@ -1268,18 +1289,11 @@ int ssl_check_serverhello_tlsext(SSL *s);
 #define tlsext_tick_md	EVP_sha256
 int tls1_process_ticket(SSL *s, const unsigned char *session_id,
     int session_id_len, CBS *ext_block, SSL_SESSION **ret);
-int tls12_get_hashid(const EVP_MD *md);
-int tls12_get_sigid(const EVP_PKEY *pk);
-int tls12_get_hashandsig(CBB *cbb, const EVP_PKEY *pk, const EVP_MD *md);
-const EVP_MD *tls12_get_hash(unsigned char hash_alg);
 
 long ssl_get_algorithm2(SSL *s);
 int tls1_process_sigalgs(SSL *s, CBS *cbs);
-void tls12_get_req_sig_algs(SSL *s, unsigned char **sigalgs,
-    size_t *sigalgs_len);
 
 int tls1_check_ec_server_key(SSL *s);
-int tls1_check_ec_tmp_key(SSL *s);
 
 int ssl_add_clienthello_use_srtp_ext(SSL *s, unsigned char *p,
     int *len, int maxlen);
@@ -1306,11 +1320,6 @@ int SSL_state_func_code(int _state);
 #define SSLerror(s, r) SSL_error_internal(s, r, __FILE__, __LINE__)
 #define SSLerrorx(r) ERR_PUT_error(ERR_LIB_SSL,(0xfff),(r),__FILE__,__LINE__)
 void SSL_error_internal(const SSL *s, int r, char *f, int l);
-
-void tls1_get_formatlist(SSL *s, int client_formats, const uint8_t **pformats,
-    size_t *pformatslen);
-void tls1_get_curvelist(SSL *s, int client_curves, const uint16_t **pcurves,
-    size_t *pcurveslen);
 
 #ifndef OPENSSL_NO_SRTP
 

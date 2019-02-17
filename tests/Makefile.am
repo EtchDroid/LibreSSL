@@ -82,6 +82,11 @@ TESTS += bnaddsub
 check_PROGRAMS += bnaddsub
 bnaddsub_SOURCES = bnaddsub.c
 
+# bn_rand_interval
+TESTS += bn_rand_interval
+check_PROGRAMS += bn_rand_interval
+bn_rand_interval_SOURCES = bn_rand_interval.c
+
 # bntest
 TESTS += bntest
 bntest_CPPFLAGS = $(AM_CPPFLAGS) -ULIBRESSL_INTERNAL
@@ -231,6 +236,11 @@ check_PROGRAMS += keypairtest
 keypairtest_SOURCES = keypairtest.c
 EXTRA_DIST += keypairtest.sh
 
+# key_schedule
+TESTS += key_schedule
+check_PROGRAMS += key_schedule
+key_schedule_SOURCES = key_schedule.c
+
 # md4test
 TESTS += md4test
 check_PROGRAMS += md4test
@@ -347,6 +357,11 @@ TESTS += sha512test
 check_PROGRAMS += sha512test
 sha512test_SOURCES = sha512test.c
 
+# sm3test
+TESTS += sm3test
+check_PROGRAMS += sm3test
+sm3test_SOURCES = sm3test.c
+
 # ssl_versions
 TESTS += ssl_versions
 check_PROGRAMS += ssl_versions
@@ -415,3 +430,8 @@ verifytest_SOURCES = verifytest.c
 TESTS += x25519test
 check_PROGRAMS += x25519test
 x25519test_SOURCES = x25519test.c
+
+# x509name
+TESTS += x509name
+check_PROGRAMS += x509name
+x509name_SOURCES = x509name.c

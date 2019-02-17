@@ -62,12 +62,12 @@
  * [including the GNU Public Licence.]
  */
 
-#define NUM_NID 968
-#define NUM_SN 961
-#define NUM_LN 961
-#define NUM_OBJ 893
+#define NUM_NID 970
+#define NUM_SN 963
+#define NUM_LN 963
+#define NUM_OBJ 895
 
-static const unsigned char lvalues[6250]={
+static const unsigned char lvalues[6266]={
 0x2A,0x86,0x48,0x86,0xF7,0x0D,               /* [  0] OBJ_rsadsi */
 0x2A,0x86,0x48,0x86,0xF7,0x0D,0x01,          /* [  6] OBJ_pkcs */
 0x2A,0x86,0x48,0x86,0xF7,0x0D,0x02,0x02,     /* [ 13] OBJ_md2 */
@@ -955,6 +955,8 @@ static const unsigned char lvalues[6250]={
 0x2B,0x06,0x01,0x04,0x01,0x82,0x37,0x3C,0x02,0x01,0x01,/* [6216] OBJ_jurisdictionLocalityName */
 0x2B,0x06,0x01,0x04,0x01,0x82,0x37,0x3C,0x02,0x01,0x02,/* [6227] OBJ_jurisdictionStateOrProvinceName */
 0x2B,0x06,0x01,0x04,0x01,0x82,0x37,0x3C,0x02,0x01,0x03,/* [6238] OBJ_jurisdictionCountryName */
+0x2A,0x81,0x1C,0xCF,0x55,0x01,0x83,0x11,     /* [6249] OBJ_sm3 */
+0x2A,0x81,0x1C,0xCF,0x55,0x01,0x83,0x75,     /* [6257] OBJ_sm3WithRSAEncryption */
 };
 
 static const ASN1_OBJECT nid_objs[NUM_NID]={
@@ -2513,6 +2515,9 @@ static const ASN1_OBJECT nid_objs[NUM_NID]={
 {"AuthGOST01","auth-gost01",NID_auth_gost01,0,NULL,0},
 {"AuthNULL","auth-null",NID_auth_null,0,NULL,0},
 {"ChaCha20-Poly1305","chacha20-poly1305",NID_chacha20_poly1305,0,NULL,0},
+{"SM3","sm3",NID_sm3,8,&(lvalues[6249]),0},
+{"RSA-SM3","sm3WithRSAEncryption",NID_sm3WithRSAEncryption,8,
+	&(lvalues[6257]),0},
 };
 
 static const unsigned int sn_objs[NUM_SN]={
@@ -2695,6 +2700,7 @@ static const unsigned int sn_objs[NUM_SN]={
 668,	/* "RSA-SHA256" */
 669,	/* "RSA-SHA384" */
 670,	/* "RSA-SHA512" */
+969,	/* "RSA-SM3" */
 919,	/* "RSAES-OAEP" */
 912,	/* "RSASSA-PSS" */
 777,	/* "SEED-CBC" */
@@ -2707,6 +2713,7 @@ static const unsigned int sn_objs[NUM_SN]={
 672,	/* "SHA256" */
 673,	/* "SHA384" */
 674,	/* "SHA512" */
+968,	/* "SM3" */
 188,	/* "SMIME" */
 167,	/* "SMIME-CAPS" */
 100,	/* "SN" */
@@ -4396,6 +4403,8 @@ static const unsigned int ln_objs[NUM_LN]={
 52,	/* "signingTime" */
 454,	/* "simpleSecurityObject" */
 496,	/* "singleLevelQuality" */
+968,	/* "sm3" */
+969,	/* "sm3WithRSAEncryption" */
 16,	/* "stateOrProvinceName" */
 660,	/* "streetAddress" */
 498,	/* "subtreeMaximumQuality" */
@@ -4855,6 +4864,8 @@ static const unsigned int obj_objs[NUM_OBJ]={
 768,	/* OBJ_camellia_256_ofb128          0 3 4401 5 3 1 9 43 */
 759,	/* OBJ_camellia_256_cfb128          0 3 4401 5 3 1 9 44 */
 437,	/* OBJ_pilot                        0 9 2342 19200300 100 */
+968,	/* OBJ_sm3                          1 2 156 10197 1 401 */
+969,	/* OBJ_sm3WithRSAEncryption         1 2 156 10197 1 501 */
 776,	/* OBJ_seed_ecb                     1 2 410 200004 1 3 */
 777,	/* OBJ_seed_cbc                     1 2 410 200004 1 4 */
 779,	/* OBJ_seed_cfb128                  1 2 410 200004 1 5 */

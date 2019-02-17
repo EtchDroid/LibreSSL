@@ -69,6 +69,13 @@ add_executable(bnaddsub bnaddsub.c)
 target_link_libraries(bnaddsub ${OPENSSL_LIBS})
 add_test(bnaddsub bnaddsub)
 
+# bn_rand_interval
+if(NOT BUILD_SHARED_LIBS)
+	add_executable(bn_rand_interval bn_rand_interval.c)
+	target_link_libraries(bn_rand_interval ${OPENSSL_LIBS})
+	add_test(bn_rand_interval bn_rand_interval)
+endif()
+
 # bntest
 if(NOT BUILD_SHARED_LIBS)
 	add_executable(bntest bntest.c)
@@ -220,6 +227,10 @@ add_test(igetest igetest)
 
 # keypairtest
 if(NOT BUILD_SHARED_LIBS)
+	add_executable(key_schedule key_schedule.c)
+	target_link_libraries(key_schedule ${OPENSSL_LIBS})
+	add_test(key_schedule key_schedule)
+
 	add_executable(keypairtest keypairtest.c)
 	target_link_libraries(keypairtest ${OPENSSL_LIBS})
 	add_test(keypairtest keypairtest
@@ -358,6 +369,11 @@ add_executable(sha512test sha512test.c)
 target_link_libraries(sha512test ${OPENSSL_LIBS})
 add_test(sha512test sha512test)
 
+# sm3test
+add_executable(sm3test sm3test.c)
+target_link_libraries(sm3test ${OPENSSL_LIBS})
+add_test(sm3test sm3test)
+
 # ssl_versions
 if(NOT BUILD_SHARED_LIBS)
 	add_executable(ssl_versions ssl_versions.c)
@@ -461,6 +477,11 @@ endif()
 add_executable(x25519test x25519test.c)
 target_link_libraries(x25519test ${OPENSSL_LIBS})
 add_test(x25519test x25519test)
+
+# x509name
+add_executable(x509name x509name.c)
+target_link_libraries(x509name ${OPENSSL_LIBS})
+add_test(x509name x509name)
 
 if(BUILD_SHARED_LIBS)
 	add_custom_command(TARGET x25519test POST_BUILD

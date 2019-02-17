@@ -1,4 +1,4 @@
-/* $OpenBSD: ecp_mont.c,v 1.16.2.1 2018/11/17 18:55:41 tb Exp $ */
+/* $OpenBSD: ecp_mont.c,v 1.17 2018/11/05 20:18:21 tb Exp $ */
 /*
  * Originally written by Bodo Moeller for the OpenSSL project.
  */
