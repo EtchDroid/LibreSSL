@@ -26,7 +26,7 @@ m4_ifdef([AM_SILENT_RULES], [AM_SILENT_RULES([yes])])
 # This must be saved before AC_PROG_CC
 USER_CFLAGS="$CFLAGS"
 
-AC_PROG_CC
+AC_PROG_CC([cc gcc])
 AC_PROG_CC_STDC
 AM_PROG_CC_C_O
 AC_PROG_LIBTOOL
@@ -111,6 +111,10 @@ AM_CONDITIONAL([HOST_ASM_ELF_X86_64],
     [test "x$HOST_ABI" = "xelf" -a "$host_cpu" = "x86_64" -a "x$enable_asm" != "xno"])
 AM_CONDITIONAL([HOST_ASM_MACOSX_X86_64],
     [test "x$HOST_ABI" = "xmacosx" -a "$host_cpu" = "x86_64" -a "x$enable_asm" != "xno"])
+AM_CONDITIONAL([HOST_ASM_MASM_X86_64],
+    [test "x$HOST_ABI" = "xmasm" -a "$host_cpu" = "x86_64" -a "x$enable_asm" != "xno"])
+AM_CONDITIONAL([HOST_ASM_MINGW64_X86_64],
+    [test "x$HOST_ABI" = "xmingw64" -a "$host_cpu" = "x86_64" -a "x$enable_asm" != "xno"])
 
 # Check if time_t is sized correctly
 AC_CHECK_SIZEOF([time_t], [time.h])

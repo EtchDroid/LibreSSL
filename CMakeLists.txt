@@ -9,7 +9,7 @@ set(CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}" ${CMAKE_MODULE_PATH})
 include(cmake_export_symbol)
 include(GNUInstallDirs)
 
-project (LibreSSL C)
+project (LibreSSL C ASM)
 
 enable_testing()
 
@@ -49,6 +49,7 @@ endif()
 
 if(CMAKE_SYSTEM_NAME MATCHES "OpenBSD")
 	add_definitions(-DHAVE_ATTRIBUTE__BOUNDED__)
+	add_definitions(-DHAVE_ATTRIBUTE__DEAD__)
 endif()
 
 if(CMAKE_SYSTEM_NAME MATCHES "Linux")
@@ -59,12 +60,12 @@ if(CMAKE_SYSTEM_NAME MATCHES "Linux")
 	set(PLATFORM_LIBS ${PLATFORM_LIBS} pthread)
 endif()
 
-if(CMAKE_SYSTEM_NAME MATCHES "MINGW")
+if(WIN32 OR (CMAKE_SYSTEM_NAME MATCHES "MINGW"))
 	set(BUILD_NC false)
-endif()
-
-if(WIN32)
-	set(BUILD_NC false)
+	add_definitions(-D_GNU_SOURCE)
+	add_definitions(-D_POSIX)
+	add_definitions(-D_POSIX_SOURCE)
+	add_definitions(-D__USE_MINGW_ANSI_STDIO)
 endif()
 
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -O2 -Wall")
@@ -237,6 +238,26 @@ if(HAVE_GETPAGESIZE)
 	add_definitions(-DHAVE_GETPAGESIZE)
 endif()
 
+check_function_exists(getprogname HAVE_GETPROGNAME)
+if(HAVE_GETPROGNAME)
+	add_definitions(-DHAVE_GETPROGNAME)
+endif()
+
+check_function_exists(syslog_r HAVE_SYSLOG_R)
+if(HAVE_SYSLOG_R)
+	add_definitions(-DHAVE_SYSLOG_R)
+endif()
+
+check_function_exists(syslog HAVE_SYSLOG)
+if(HAVE_SYSLOG)
+	add_definitions(-DHAVE_SYSLOG)
+endif()
+
+check_symbol_exists(timespecsub sys/time.h HAVE_TIMESPECSUB)
+if(HAVE_TIMESPECSUB)
+	add_definitions(-DHAVE_TIMESPECSUB)
+endif()
+
 check_function_exists(timingsafe_bcmp HAVE_TIMINGSAFE_BCMP)
 if(HAVE_TIMINGSAFE_BCMP)
 	add_definitions(-DHAVE_TIMINGSAFE_BCMP)
@@ -268,6 +289,14 @@ if(ENABLE_ASM)
 		endif()
 	elseif(APPLE AND "${CMAKE_SYSTEM_PROCESSOR}" STREQUAL "x86_64")
 		set(HOST_ASM_MACOSX_X86_64 true)
+	elseif(MSVC AND "${CMAKE_GENERATOR}" MATCHES "Win64" AND FALSE)
+		# XXX Disabled for now, CMake's MASM support seems to either never
+		# build supply ASM or build it with the C compiler in a mode where it
+		# does not parse correctly. It might be easier to get NASM support working.
+		set(HOST_ASM_MASM_X86_64 true)
+		ENABLE_LANGUAGE(ASM_MASM)
+	elseif(CMAKE_SYSTEM_NAME MATCHES "MINGW" AND "${CMAKE_SYSTEM_PROCESSOR}" STREQUAL "x86_64")
+		set(HOST_ASM_MINGW64_X86_64 true)
 	endif()
 endif()
 

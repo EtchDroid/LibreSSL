@@ -77,6 +77,7 @@ main(int argc, char **argv)
 	ECDSA_SIG_free(NULL);
 	EC_GROUP_clear_free(NULL);
 	EC_GROUP_free(NULL);
+	EC_KEY_METHOD_free(NULL);
 	EC_KEY_free(NULL);
 	EC_POINT_clear_free(NULL);
 	EC_POINT_free(NULL);
@@ -88,6 +89,7 @@ main(int argc, char **argv)
 	ESS_ISSUER_SERIAL_free(NULL);
 	ESS_SIGNING_CERT_free(NULL);
 	EVP_CIPHER_CTX_free(NULL);
+	EVP_ENCODE_CTX_free(NULL);
 	EVP_MD_CTX_free(NULL);
 	EVP_PKEY_CTX_free(NULL);
 	EVP_PKEY_asn1_free(NULL);

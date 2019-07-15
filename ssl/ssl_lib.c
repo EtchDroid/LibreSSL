@@ -1,4 +1,4 @@
-/* $OpenBSD: ssl_lib.c,v 1.196 2018/11/19 15:07:29 jsing Exp $ */
+/* $OpenBSD: ssl_lib.c,v 1.204 2019/03/25 17:33:26 jsing Exp $ */
 /* Copyright (C) 1995-1998 Eric Young (eay@cryptsoft.com)
  * All rights reserved.
  *
@@ -1255,6 +1255,48 @@ SSL_get_ciphers(const SSL *s)
 	return (NULL);
 }
 
+STACK_OF(SSL_CIPHER) *
+SSL_get_client_ciphers(const SSL *s)
+{
+	if (s == NULL || s->session == NULL || !s->server)
+		return NULL;
+	return s->session->ciphers;
+}
+
+STACK_OF(SSL_CIPHER) *
+SSL_get1_supported_ciphers(SSL *s)
+{
+	STACK_OF(SSL_CIPHER) *supported_ciphers = NULL, *ciphers;
+	const SSL_CIPHER *cipher;
+	uint16_t min_vers, max_vers;
+	int i;
+
+	if (s == NULL)
+		return NULL;
+	if (!ssl_supported_version_range(s, &min_vers, &max_vers))
+		return NULL;
+	if ((ciphers = SSL_get_ciphers(s)) == NULL)
+		return NULL;
+	if ((supported_ciphers = sk_SSL_CIPHER_new_null()) == NULL)
+		return NULL;
+
+	for (i = 0; i < sk_SSL_CIPHER_num(ciphers); i++) {
+		if ((cipher = sk_SSL_CIPHER_value(ciphers, i)) == NULL)
+			goto err;
+		if (!ssl_cipher_is_permitted(cipher, min_vers, max_vers))
+			continue;
+		if (!sk_SSL_CIPHER_push(supported_ciphers, cipher))
+			goto err;
+	}
+
+	if (sk_SSL_CIPHER_num(supported_ciphers) > 0)
+		return supported_ciphers;
+
+ err:
+	sk_SSL_CIPHER_free(supported_ciphers);
+	return NULL;
+}
+
 /*
  * Return a STACK of the ciphers available for the SSL and in order of
  * algorithm id.
@@ -1401,123 +1443,6 @@ SSL_get_shared_ciphers(const SSL *s, char *buf, int len)
 		*end = '\0';
 	return (buf);
 }
-
-int
-ssl_cipher_list_to_bytes(SSL *s, STACK_OF(SSL_CIPHER) *ciphers, CBB *cbb)
-{
-	SSL_CIPHER *cipher;
-	int num_ciphers = 0;
-	int i;
-
-	if (ciphers == NULL)
-		return 0;
-
-	for (i = 0; i < sk_SSL_CIPHER_num(ciphers); i++) {
-		if ((cipher = sk_SSL_CIPHER_value(ciphers, i)) == NULL)
-			return 0;
-
-		/* Skip TLS v1.3 only ciphersuites if lower than v1.3 */
-		if ((cipher->algorithm_ssl & SSL_TLSV1_3) &&
-		    (TLS1_get_client_version(s) < TLS1_3_VERSION))
-			continue;
-
-		/* Skip TLS v1.2 only ciphersuites if lower than v1.2 */
-		if ((cipher->algorithm_ssl & SSL_TLSV1_2) &&
-		    (TLS1_get_client_version(s) < TLS1_2_VERSION))
-			continue;
-
-		if (!CBB_add_u16(cbb, ssl3_cipher_get_value(cipher)))
-			return 0;
-
-		num_ciphers++;
-	}
-
-	/* Add SCSV if there are other ciphers and we're not renegotiating. */
-	if (num_ciphers > 0 && !s->internal->renegotiate) {
-		if (!CBB_add_u16(cbb, SSL3_CK_SCSV & SSL3_CK_VALUE_MASK))
-			return 0;
-	}
-
-	if (!CBB_flush(cbb))
-		return 0;
-
-	return 1;
-}
-
-STACK_OF(SSL_CIPHER) *
-ssl_bytes_to_cipher_list(SSL *s, CBS *cbs)
-{
-	STACK_OF(SSL_CIPHER) *ciphers = NULL;
-	const SSL_CIPHER *cipher;
-	uint16_t cipher_value, max_version;
-	unsigned long cipher_id;
-
-	if (s->s3 != NULL)
-		S3I(s)->send_connection_binding = 0;
-
-	if ((ciphers = sk_SSL_CIPHER_new_null()) == NULL) {
-		SSLerror(s, ERR_R_MALLOC_FAILURE);
-		goto err;
-	}
-
-	while (CBS_len(cbs) > 0) {
-		if (!CBS_get_u16(cbs, &cipher_value)) {
-			SSLerror(s, SSL_R_ERROR_IN_RECEIVED_CIPHER_LIST);
-			goto err;
-		}
-
-		cipher_id = SSL3_CK_ID | cipher_value;
-
-		if (s->s3 != NULL && cipher_id == SSL3_CK_SCSV) {
-			/*
-			 * TLS_EMPTY_RENEGOTIATION_INFO_SCSV is fatal if
-			 * renegotiating.
-			 */
-			if (s->internal->renegotiate) {
-				SSLerror(s, SSL_R_SCSV_RECEIVED_WHEN_RENEGOTIATING);
-				ssl3_send_alert(s, SSL3_AL_FATAL,
-				    SSL_AD_HANDSHAKE_FAILURE);
-
-				goto err;
-			}
-			S3I(s)->send_connection_binding = 1;
-			continue;
-		}
-
-		if (cipher_id == SSL3_CK_FALLBACK_SCSV) {
-			/*
-			 * TLS_FALLBACK_SCSV indicates that the client
-			 * previously tried a higher protocol version.
-			 * Fail if the current version is an unexpected
-			 * downgrade.
-			 */
-			max_version = ssl_max_server_version(s);
-			if (max_version == 0 || s->version < max_version) {
-				SSLerror(s, SSL_R_INAPPROPRIATE_FALLBACK);
-				if (s->s3 != NULL)
-					ssl3_send_alert(s, SSL3_AL_FATAL,
-					    SSL_AD_INAPPROPRIATE_FALLBACK);
-				goto err;
-			}
-			continue;
-		}
-
-		if ((cipher = ssl3_get_cipher_by_value(cipher_value)) != NULL) {
-			if (!sk_SSL_CIPHER_push(ciphers, cipher)) {
-				SSLerror(s, ERR_R_MALLOC_FAILURE);
-				goto err;
-			}
-		}
-	}
-
-	return (ciphers);
-
-err:
-	sk_SSL_CIPHER_free(ciphers);
-
-	return (NULL);
-}
-
 
 /*
  * Return a servername extension value if provided in Client Hello, or NULL.
@@ -2168,17 +2093,6 @@ ssl_get_server_send_pkey(const SSL *s)
 	return (c->pkeys + i);
 }
 
-X509 *
-ssl_get_server_send_cert(const SSL *s)
-{
-	CERT_PKEY	*cpk;
-
-	cpk = ssl_get_server_send_pkey(s);
-	if (!cpk)
-		return (NULL);
-	return (cpk->x509);
-}
-
 EVP_PKEY *
 ssl_get_sign_pkey(SSL *s, const SSL_CIPHER *cipher, const EVP_MD **pmd,
     const struct ssl_sigalg **sap)
@@ -2206,18 +2120,7 @@ ssl_get_sign_pkey(SSL *s, const SSL_CIPHER *cipher, const EVP_MD **pmd,
 	}
 
 	pkey = c->pkeys[idx].privatekey;
-	sigalg = c->pkeys[idx].sigalg;
-	if (!SSL_USE_SIGALGS(s)) {
-		if (pkey->type == EVP_PKEY_RSA) {
-			sigalg = ssl_sigalg_lookup(SIGALG_RSA_PKCS1_MD5_SHA1);
-		} else if (pkey->type == EVP_PKEY_EC) {
-			sigalg = ssl_sigalg_lookup(SIGALG_ECDSA_SHA1);
-		} else {
-			SSLerror(s, SSL_R_UNKNOWN_PKEY_TYPE);
-			return (NULL);
-		}
-	}
-	if (sigalg == NULL) {
+	if ((sigalg = ssl_sigalg_select(s, pkey)) == NULL) {
 		SSLerror(s, SSL_R_SIGNATURE_ALGORITHMS_ERROR);
 		return (NULL);
 	}
@@ -2492,6 +2395,8 @@ ssl_version_string(int ver)
 		return (SSL_TXT_TLSV1_1);
 	case TLS1_2_VERSION:
 		return (SSL_TXT_TLSV1_2);
+	case TLS1_3_VERSION:
+		return (SSL_TXT_TLSV1_3);
 	default:
 		return ("unknown");
 	}
@@ -2829,20 +2734,14 @@ SSL_get_SSL_CTX(const SSL *ssl)
 SSL_CTX *
 SSL_set_SSL_CTX(SSL *ssl, SSL_CTX* ctx)
 {
-	CERT *ocert = ssl->cert;
-
 	if (ssl->ctx == ctx)
 		return (ssl->ctx);
 	if (ctx == NULL)
 		ctx = ssl->initial_ctx;
+
+	ssl_cert_free(ssl->cert);
 	ssl->cert = ssl_cert_dup(ctx->internal->cert);
-	if (ocert != NULL) {
-		int i;
-		/* Copy negotiated sigalg from original certificate. */
-		for (i = 0; i < SSL_PKEY_NUM; i++)
-			ssl->cert->pkeys[i].sigalg = ocert->pkeys[i].sigalg;
-		ssl_cert_free(ocert);
-	}
+
 	CRYPTO_add(&ctx->references, 1, CRYPTO_LOCK_SSL_CTX);
 	SSL_CTX_free(ssl->ctx); /* decrement reference count */
 	ssl->ctx = ctx;

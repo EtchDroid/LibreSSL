@@ -1,4 +1,4 @@
-/* $OpenBSD: tls1.h,v 1.37 2018/11/09 00:34:55 beck Exp $ */
+/* $OpenBSD: tls1.h,v 1.39 2019/03/19 16:53:03 jsing Exp $ */
 /* Copyright (C) 1995-1998 Eric Young (eay@cryptsoft.com)
  * All rights reserved.
  *

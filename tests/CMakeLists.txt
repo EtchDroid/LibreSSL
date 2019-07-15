@@ -25,7 +25,7 @@ add_test(aes_wrap aes_wrap)
 
 # arc4randomforktest
 # Windows/mingw does not have fork, but Cygwin does.
-if(NOT CMAKE_HOST_WIN32 AND NOT CMAKE_SYSTEM_NAME MATCHES "MINGW")
+if(NOT (WIN32 OR (CMAKE_SYSTEM_NAME MATCHES "MINGW")))
 	add_executable(arc4randomforktest arc4randomforktest.c)
 	target_link_libraries(arc4randomforktest ${OPENSSL_LIBS})
 	add_test(arc4randomforktest ${CMAKE_CURRENT_SOURCE_DIR}/arc4randomforktest.sh)
@@ -83,6 +83,13 @@ if(NOT BUILD_SHARED_LIBS)
 		-ULIBRESSL_INTERNAL)
 	target_link_libraries(bntest ${OPENSSL_LIBS})
 	add_test(bntest bntest)
+endif()
+
+# buffertest
+if(NOT BUILD_SHARED_LIBS)
+	add_executable(buffertest buffertest.c)
+	target_link_libraries(buffertest ${OPENSSL_LIBS})
+	add_test(buffertest buffertest)
 endif()
 
 # bytestringtest
@@ -325,6 +332,13 @@ add_executable(rc4test rc4test.c)
 target_link_libraries(rc4test ${OPENSSL_LIBS})
 add_test(rc4test rc4test)
 
+# recordtest
+if(NOT BUILD_SHARED_LIBS)
+	add_executable(recordtest recordtest.c)
+	target_link_libraries(recordtest ${OPENSSL_LIBS})
+	add_test(recordtest recordtest)
+endif()
+
 # rfc5280time
 add_executable(rfc5280time rfc5280time.c)
 target_link_libraries(rfc5280time ${OPENSSL_LIBS})
@@ -373,6 +387,11 @@ add_test(sha512test sha512test)
 add_executable(sm3test sm3test.c)
 target_link_libraries(sm3test ${OPENSSL_LIBS})
 add_test(sm3test sm3test)
+
+# sm4test
+add_executable(sm4test sm4test.c)
+target_link_libraries(sm4test ${OPENSSL_LIBS})
+add_test(sm4test sm4test)
 
 # ssl_versions
 if(NOT BUILD_SHARED_LIBS)
@@ -464,6 +483,13 @@ if(NOT BUILD_SHARED_LIBS)
 	add_executable(utf8test utf8test.c)
 	target_link_libraries(utf8test ${OPENSSL_LIBS})
 	add_test(utf8test utf8test)
+endif()
+
+# valid_handshakes_terminate
+if(NOT BUILD_SHARED_LIBS)
+	add_executable(valid_handshakes_terminate valid_handshakes_terminate.c)
+	target_link_libraries(valid_handshakes_terminate ${OPENSSL_LIBS})
+	add_test(valid_handshakes_terminate valid_handshakes_terminate)
 endif()
 
 # verifytest

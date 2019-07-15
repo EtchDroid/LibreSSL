@@ -1,6 +1,7 @@
 /* $OpenBSD: crypto_lock.c,v 1.1 2018/11/11 06:41:28 bcook Exp $ */
 /*
- * Copyright (c) 2018 Brent Cook <bcook@openbsd.org>
+ * Copyright (c) 2019 Brent Cook <bcook@openbsd.org>
+ * Copyright (c) 2019 John Norrbin <jlnorrbin@johnex.se>
  *
  * Permission to use, copy, modify, and distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -19,16 +20,7 @@
 
 #include <openssl/crypto.h>
 
-static HANDLE locks[CRYPTO_NUM_LOCKS];
-
-void
-crypto_init_locks(void)
-{
-	int i;
-
-	for (i = 0; i < CRYPTO_NUM_LOCKS; i++)
-		locks[i] = CreateMutex(NULL, FALSE, NULL);
-}
+static volatile LPCRITICAL_SECTION locks[CRYPTO_NUM_LOCKS] = { NULL };
 
 void
 CRYPTO_lock(int mode, int type, const char *file, int line)
@@ -36,20 +28,29 @@ CRYPTO_lock(int mode, int type, const char *file, int line)
 	if (type < 0 || type >= CRYPTO_NUM_LOCKS)
 		return;
 
+	if (locks[type] == NULL) {
+		LPCRITICAL_SECTION lcs = malloc(sizeof(CRITICAL_SECTION));
+		if (lcs == NULL) exit(ENOMEM);
+		InitializeCriticalSection(lcs);
+		if (InterlockedCompareExchangePointer((PVOID*)&locks[type], (PVOID)lcs, NULL) != NULL) {
+			DeleteCriticalSection(lcs);
+			free(lcs);
+		}
+	}
+
 	if (mode & CRYPTO_LOCK)
-		WaitForSingleObject(locks[type], INFINITE);
+		EnterCriticalSection(locks[type]);
 	else
-		ReleaseMutex(locks[type]);
+		LeaveCriticalSection(locks[type]);
 }
 
 int
 CRYPTO_add_lock(int *pointer, int amount, int type, const char *file,
     int line)
 {
-	int ret = 0;
-	CRYPTO_lock(CRYPTO_LOCK|CRYPTO_WRITE, type, file, line);
-	ret = *pointer + amount;
-	*pointer = ret;
-	CRYPTO_lock(CRYPTO_UNLOCK|CRYPTO_WRITE, type, file, line);
-	return (ret);
+	/*
+	 * Windows is LLP64. sizeof(LONG) == sizeof(int) on 32-bit and 64-bit.
+	 */
+	int ret = InterlockedExchangeAdd((LONG *)pointer, (LONG)amount);
+	return ret + amount;
 }

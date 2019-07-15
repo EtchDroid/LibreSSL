@@ -58,6 +58,7 @@ opensslinclude_HEADERS += rsa.h
 opensslinclude_HEADERS += safestack.h
 opensslinclude_HEADERS += sha.h
 opensslinclude_HEADERS += sm3.h
+opensslinclude_HEADERS += sm4.h
 opensslinclude_HEADERS += srtp.h
 opensslinclude_HEADERS += ssl.h
 opensslinclude_HEADERS += ssl2.h

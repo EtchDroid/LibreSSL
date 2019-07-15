@@ -19,6 +19,7 @@ set(
 	ssl_both.c
 	ssl_cert.c
 	ssl_ciph.c
+	ssl_ciphers.c
 	ssl_clnt.c
 	ssl_err.c
 	ssl_init.c
@@ -32,13 +33,19 @@ set(
 	ssl_srvr.c
 	ssl_stat.c
 	ssl_tlsext.c
+	ssl_transcript.c
 	ssl_txt.c
 	ssl_versions.c
 	t1_enc.c
-	t1_hash.c
 	t1_lib.c
+	tls13_buffer.c
+	tls13_client.c
 	tls13_handshake.c
+	tls13_handshake_msg.c
 	tls13_key_schedule.c
+	tls13_lib.c
+	tls13_record.c
+	tls13_record_layer.c
 )
 
 add_library(ssl ${SSL_SRC})

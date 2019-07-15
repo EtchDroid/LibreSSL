@@ -239,7 +239,7 @@ __BEGIN_HIDDEN_DECLS
 	     : "r"(a), "r"(b));		\
 	ret;			})
 #  endif	/* compiler */
-# elif defined(__x86_64) || defined(__x86_64__)
+# elif (defined(__x86_64) || defined(__x86_64__)) && defined(_LP64)
 #  if defined(__GNUC__) && __GNUC__>=2
 #   define BN_UMULT_HIGH(a,b)	({	\
 	BN_ULONG ret,discard;	\

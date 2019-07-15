@@ -1,6 +1,6 @@
-/* $OpenBSD: ssl_sigalgs.h,v 1.8 2018/11/16 02:41:16 beck Exp $ */
+/* $OpenBSD: ssl_sigalgs.h,v 1.14 2019/03/25 17:33:26 jsing Exp $ */
 /*
- * Copyright (c) 2018, Bob Beck <beck@openbsd.org>
+ * Copyright (c) 2018-2019 Bob Beck <beck@openbsd.org>
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -33,7 +33,7 @@ __BEGIN_HIDDEN_DECLS
 #define SIGALG_ECDSA_SECP224R1_SHA224	0x0303
 #define SIGALG_ECDSA_SECP256R1_SHA256	0x0403
 #define SIGALG_ECDSA_SECP384R1_SHA384	0x0503
-#define SIGALG_ECDSA_SECP512R1_SHA512	0x0603
+#define SIGALG_ECDSA_SECP521R1_SHA512	0x0603
 #define SIGALG_RSA_PSS_RSAE_SHA256	0x0804
 #define SIGALG_RSA_PSS_RSAE_SHA384	0x0805
 #define SIGALG_RSA_PSS_RSAE_SHA512	0x0806
@@ -64,19 +64,22 @@ struct ssl_sigalg{
 	uint16_t value;
 	const EVP_MD *(*md)(void);
 	int key_type;
-	int pkey_idx; /* XXX get rid of this eventually */
 	int curve_nid;
 	int flags;
 };
 
 extern uint16_t tls12_sigalgs[];
 extern size_t tls12_sigalgs_len;
+extern uint16_t tls13_sigalgs[];
+extern size_t tls13_sigalgs_len;
 
 const struct ssl_sigalg *ssl_sigalg_lookup(uint16_t sigalg);
 const struct ssl_sigalg *ssl_sigalg(uint16_t sigalg, uint16_t *values, size_t len);
 int ssl_sigalgs_build(CBB *cbb, uint16_t *values, size_t len);
 int ssl_sigalg_pkey_check(uint16_t sigalg, EVP_PKEY *pk);
-int ssl_sigalg_pkey_ok(const struct ssl_sigalg *sigalg, EVP_PKEY *pkey);
+int ssl_sigalg_pkey_ok(const struct ssl_sigalg *sigalg, EVP_PKEY *pkey,
+    int check_curve);
+const struct ssl_sigalg *ssl_sigalg_select(SSL *s, EVP_PKEY *pkey);
 
 __END_HIDDEN_DECLS
 
