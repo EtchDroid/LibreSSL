@@ -327,9 +327,13 @@ dist_man3_MANS += PKCS12_new.3
 dist_man3_MANS += PKCS12_newpass.3
 dist_man3_MANS += PKCS12_parse.3
 dist_man3_MANS += PKCS5_PBKDF2_HMAC.3
+dist_man3_MANS += PKCS7_dataFinal.3
+dist_man3_MANS += PKCS7_dataInit.3
 dist_man3_MANS += PKCS7_decrypt.3
 dist_man3_MANS += PKCS7_encrypt.3
 dist_man3_MANS += PKCS7_new.3
+dist_man3_MANS += PKCS7_set_content.3
+dist_man3_MANS += PKCS7_set_type.3
 dist_man3_MANS += PKCS7_sign.3
 dist_man3_MANS += PKCS7_sign_add_signer.3
 dist_man3_MANS += PKCS7_verify.3
@@ -1701,6 +1705,7 @@ install-data-hook:
 	ln -sf "OPENSSL_VERSION_NUMBER.3" "$(DESTDIR)$(mandir)/man3/SSLeay.3"
 	ln -sf "OPENSSL_VERSION_NUMBER.3" "$(DESTDIR)$(mandir)/man3/SSLeay_version.3"
 	ln -sf "OPENSSL_config.3" "$(DESTDIR)$(mandir)/man3/OPENSSL_no_config.3"
+	ln -sf "OPENSSL_init_crypto.3" "$(DESTDIR)$(mandir)/man3/OPENSSL_init.3"
 	ln -sf "OPENSSL_load_builtin_modules.3" "$(DESTDIR)$(mandir)/man3/ASN1_add_oid_module.3"
 	ln -sf "OPENSSL_load_builtin_modules.3" "$(DESTDIR)$(mandir)/man3/ENGINE_add_conf_module.3"
 	ln -sf "OPENSSL_malloc.3" "$(DESTDIR)$(mandir)/man3/CRYPTO_free.3"
@@ -1858,6 +1863,8 @@ install-data-hook:
 	ln -sf "PKCS7_new.3" "$(DESTDIR)$(mandir)/man3/PKCS7_SIGN_ENVELOPE_free.3"
 	ln -sf "PKCS7_new.3" "$(DESTDIR)$(mandir)/man3/PKCS7_SIGN_ENVELOPE_new.3"
 	ln -sf "PKCS7_new.3" "$(DESTDIR)$(mandir)/man3/PKCS7_free.3"
+	ln -sf "PKCS7_set_content.3" "$(DESTDIR)$(mandir)/man3/PKCS7_content_new.3"
+	ln -sf "PKCS7_set_type.3" "$(DESTDIR)$(mandir)/man3/PKCS7_set0_type_other.3"
 	ln -sf "PKCS7_verify.3" "$(DESTDIR)$(mandir)/man3/PKCS7_get0_signers.3"
 	ln -sf "PKCS8_PRIV_KEY_INFO_new.3" "$(DESTDIR)$(mandir)/man3/PKCS8_PRIV_KEY_INFO_free.3"
 	ln -sf "PKEY_USAGE_PERIOD_new.3" "$(DESTDIR)$(mandir)/man3/PKEY_USAGE_PERIOD_free.3"
@@ -4263,6 +4270,7 @@ uninstall-local:
 	-rm -f "$(DESTDIR)$(mandir)/man3/SSLeay.3"
 	-rm -f "$(DESTDIR)$(mandir)/man3/SSLeay_version.3"
 	-rm -f "$(DESTDIR)$(mandir)/man3/OPENSSL_no_config.3"
+	-rm -f "$(DESTDIR)$(mandir)/man3/OPENSSL_init.3"
 	-rm -f "$(DESTDIR)$(mandir)/man3/ASN1_add_oid_module.3"
 	-rm -f "$(DESTDIR)$(mandir)/man3/ENGINE_add_conf_module.3"
 	-rm -f "$(DESTDIR)$(mandir)/man3/CRYPTO_free.3"
@@ -4420,6 +4428,8 @@ uninstall-local:
 	-rm -f "$(DESTDIR)$(mandir)/man3/PKCS7_SIGN_ENVELOPE_free.3"
 	-rm -f "$(DESTDIR)$(mandir)/man3/PKCS7_SIGN_ENVELOPE_new.3"
 	-rm -f "$(DESTDIR)$(mandir)/man3/PKCS7_free.3"
+	-rm -f "$(DESTDIR)$(mandir)/man3/PKCS7_content_new.3"
+	-rm -f "$(DESTDIR)$(mandir)/man3/PKCS7_set0_type_other.3"
 	-rm -f "$(DESTDIR)$(mandir)/man3/PKCS7_get0_signers.3"
 	-rm -f "$(DESTDIR)$(mandir)/man3/PKCS8_PRIV_KEY_INFO_free.3"
 	-rm -f "$(DESTDIR)$(mandir)/man3/PKEY_USAGE_PERIOD_free.3"

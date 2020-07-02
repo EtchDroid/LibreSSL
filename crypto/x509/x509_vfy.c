@@ -1,4 +1,4 @@
-/* $OpenBSD: x509_vfy.c,v 1.72.6.1 2020/06/10 03:56:22 tb Exp $ */
+/* $OpenBSD: x509_vfy.c,v 1.73 2020/05/31 17:23:39 jsing Exp $ */
 /* Copyright (C) 1995-1998 Eric Young (eay@cryptsoft.com)
  * All rights reserved.
  *

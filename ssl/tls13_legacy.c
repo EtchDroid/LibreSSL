@@ -1,4 +1,4 @@
-/*	$OpenBSD: tls13_legacy.c,v 1.3.4.1 2020/05/19 20:22:33 tb Exp $ */
+/*	$OpenBSD: tls13_legacy.c,v 1.8 2020/05/29 17:47:30 jsing Exp $ */
 /*
  * Copyright (c) 2018, 2019 Joel Sing <jsing@openbsd.org>
  *
@@ -118,6 +118,9 @@ tls13_legacy_error(SSL *ssl)
 		break;
 	case TLS13_ERR_NO_SHARED_CIPHER:
 		reason = SSL_R_NO_SHARED_CIPHER;
+		break;
+	case TLS13_ERR_NO_CERTIFICATE:
+		reason = SSL_R_MISSING_RSA_CERTIFICATE; /* XXX */
 		break;
 	case TLS13_ERR_NO_PEER_CERTIFICATE:
 		reason = SSL_R_PEER_DID_NOT_RETURN_A_CERTIFICATE;
@@ -487,9 +490,9 @@ tls13_legacy_shutdown(SSL *ssl)
 	}
 
 	/* Send close notify. */
-	if (!ctx->close_notify_sent) {
-		ctx->close_notify_sent = 1;
-		if ((ret = tls13_send_alert(ctx->rl, SSL_AD_CLOSE_NOTIFY)) < 0)
+	if (!(ssl->internal->shutdown & SSL_SENT_SHUTDOWN)) {
+		ssl->internal->shutdown |= SSL_SENT_SHUTDOWN;
+		if ((ret = tls13_send_alert(ctx->rl, TLS13_ALERT_CLOSE_NOTIFY)) < 0)
 			return tls13_legacy_return_code(ssl, ret);
 	}
 
@@ -515,4 +518,30 @@ tls13_legacy_shutdown(SSL *ssl)
 		return 1;
 
 	return 0;
+}
+
+int
+tls13_legacy_servername_process(struct tls13_ctx *ctx, uint8_t *alert)
+{
+	int legacy_alert = SSL_AD_UNRECOGNIZED_NAME;
+	int ret = SSL_TLSEXT_ERR_NOACK;
+	SSL_CTX *ssl_ctx = ctx->ssl->ctx;
+	SSL *ssl = ctx->ssl;
+
+	if (ssl_ctx->internal->tlsext_servername_callback == NULL)
+		ssl_ctx = ssl->initial_ctx;
+	if (ssl_ctx->internal->tlsext_servername_callback == NULL)
+		return 1;
+
+	ret = ssl_ctx->internal->tlsext_servername_callback(ssl, &legacy_alert,
+	    ssl_ctx->internal->tlsext_servername_arg);
+
+	if (ret == SSL_TLSEXT_ERR_ALERT_FATAL ||
+	    ret == SSL_TLSEXT_ERR_ALERT_WARNING) {
+		if (legacy_alert >= 0 && legacy_alert <= 255)
+			*alert = legacy_alert;
+		return 0;
+	}
+
+	return 1;
 }

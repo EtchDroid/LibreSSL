@@ -1,4 +1,4 @@
-/* $OpenBSD: ssl_lib.c,v 1.212 2020/03/16 15:25:14 tb Exp $ */
+/* $OpenBSD: ssl_lib.c,v 1.217 2020/05/23 12:14:52 jsing Exp $ */
 /* Copyright (C) 1995-1998 Eric Young (eay@cryptsoft.com)
  * All rights reserved.
  *
@@ -299,7 +299,7 @@ SSL_new(SSL_CTX *ctx)
 	s->internal->tlsext_ocsp_ids = NULL;
 	s->internal->tlsext_ocsp_exts = NULL;
 	s->internal->tlsext_ocsp_resp = NULL;
-	s->internal->tlsext_ocsp_resplen = -1;
+	s->internal->tlsext_ocsp_resp_len = 0;
 	CRYPTO_add(&ctx->references, 1, CRYPTO_LOCK_SSL_CTX);
 	s->initial_ctx = ctx;
 
@@ -1743,6 +1743,7 @@ SSL_CTX_new(const SSL_METHOD *meth)
 	ret->method = meth;
 	ret->internal->min_version = meth->internal->min_version;
 	ret->internal->max_version = meth->internal->max_version;
+	ret->internal->mode = SSL_MODE_AUTO_RETRY;
 
 	ret->cert_store = NULL;
 	ret->internal->session_cache_mode = SSL_SESS_CACHE_SERVER;
@@ -1945,8 +1946,8 @@ SSL_CTX_set_default_passwd_cb_userdata(SSL_CTX *ctx, void *u)
 }
 
 void
-SSL_CTX_set_cert_verify_callback(SSL_CTX *ctx, int (*cb)(X509_STORE_CTX *,
-    void *), void *arg)
+SSL_CTX_set_cert_verify_callback(SSL_CTX *ctx,
+    int (*cb)(X509_STORE_CTX *, void *), void *arg)
 {
 	ctx->internal->app_verify_callback = cb;
 	ctx->internal->app_verify_arg = arg;
@@ -1965,68 +1966,49 @@ SSL_CTX_set_verify_depth(SSL_CTX *ctx, int depth)
 	X509_VERIFY_PARAM_set_depth(ctx->param, depth);
 }
 
+static int
+ssl_cert_can_sign(X509 *x)
+{
+	/* This call populates extension flags (ex_flags). */
+	X509_check_purpose(x, -1, 0);
+
+	/* Key usage, if present, must allow signing. */
+	return ((x->ex_flags & EXFLAG_KUSAGE) == 0 ||
+	    (x->ex_kusage & X509v3_KU_DIGITAL_SIGNATURE));
+}
+
 void
 ssl_set_cert_masks(CERT *c, const SSL_CIPHER *cipher)
 {
-	int		 rsa_enc, rsa_sign, dh_tmp;
-	int		 have_ecc_cert;
-	unsigned long	 mask_k, mask_a;
-	X509		*x = NULL;
-	CERT_PKEY	*cpk;
+	unsigned long mask_a, mask_k;
+	CERT_PKEY *cpk;
 
 	if (c == NULL)
 		return;
 
-	dh_tmp = (c->dh_tmp != NULL || c->dh_tmp_cb != NULL ||
-	    c->dh_tmp_auto != 0);
+	mask_a = SSL_aNULL | SSL_aTLS1_3;
+	mask_k = SSL_kECDHE | SSL_kTLS1_3;
 
-	cpk = &(c->pkeys[SSL_PKEY_RSA_ENC]);
-	rsa_enc = (cpk->x509 != NULL && cpk->privatekey != NULL);
-	cpk = &(c->pkeys[SSL_PKEY_RSA_SIGN]);
-	rsa_sign = (cpk->x509 != NULL && cpk->privatekey != NULL);
+	if (c->dh_tmp != NULL || c->dh_tmp_cb != NULL || c->dh_tmp_auto != 0)
+		mask_k |= SSL_kDHE;
+
 	cpk = &(c->pkeys[SSL_PKEY_ECC]);
-	have_ecc_cert = (cpk->x509 != NULL && cpk->privatekey != NULL);
-
-	mask_k = 0;
-	mask_a = 0;
+	if (cpk->x509 != NULL && cpk->privatekey != NULL) {
+		if (ssl_cert_can_sign(cpk->x509))
+			mask_a |= SSL_aECDSA;
+	}
 
 	cpk = &(c->pkeys[SSL_PKEY_GOST01]);
-	if (cpk->x509 != NULL && cpk->privatekey !=NULL) {
+	if (cpk->x509 != NULL && cpk->privatekey != NULL) {
 		mask_k |= SSL_kGOST;
 		mask_a |= SSL_aGOST01;
 	}
 
-	if (rsa_enc)
-		mask_k |= SSL_kRSA;
-
-	if (dh_tmp)
-		mask_k |= SSL_kDHE;
-
-	if (rsa_enc || rsa_sign)
+	cpk = &(c->pkeys[SSL_PKEY_RSA]);
+	if (cpk->x509 != NULL && cpk->privatekey != NULL) {
 		mask_a |= SSL_aRSA;
-
-	mask_a |= SSL_aNULL;
-	mask_a |= SSL_aTLS1_3;
-
-	mask_k |= SSL_kTLS1_3;
-
-	/*
-	 * An ECC certificate may be usable for ECDH and/or
-	 * ECDSA cipher suites depending on the key usage extension.
-	 */
-	if (have_ecc_cert) {
-		x = (c->pkeys[SSL_PKEY_ECC]).x509;
-
-		/* This call populates extension flags (ex_flags). */
-		X509_check_purpose(x, -1, 0);
-
-		/* Key usage, if present, must allow signing. */
-		if ((x->ex_flags & EXFLAG_KUSAGE) == 0 ||
-		    (x->ex_kusage & X509v3_KU_DIGITAL_SIGNATURE))
-			mask_a |= SSL_aECDSA;
+		mask_k |= SSL_kRSA;
 	}
-
-	mask_k |= SSL_kECDHE;
 
 	c->mask_k = mask_k;
 	c->mask_a = mask_a;
@@ -2085,10 +2067,7 @@ ssl_get_server_send_pkey(const SSL *s)
 	if (alg_a & SSL_aECDSA) {
 		i = SSL_PKEY_ECC;
 	} else if (alg_a & SSL_aRSA) {
-		if (c->pkeys[SSL_PKEY_RSA_ENC].x509 == NULL)
-			i = SSL_PKEY_RSA_SIGN;
-		else
-			i = SSL_PKEY_RSA_ENC;
+		i = SSL_PKEY_RSA;
 	} else if (alg_a & SSL_aGOST01) {
 		i = SSL_PKEY_GOST01;
 	} else { /* if (alg_a & SSL_aNULL) */
@@ -2113,10 +2092,7 @@ ssl_get_sign_pkey(SSL *s, const SSL_CIPHER *cipher, const EVP_MD **pmd,
 	c = s->cert;
 
 	if (alg_a & SSL_aRSA) {
-		if (c->pkeys[SSL_PKEY_RSA_SIGN].privatekey != NULL)
-			idx = SSL_PKEY_RSA_SIGN;
-		else if (c->pkeys[SSL_PKEY_RSA_ENC].privatekey != NULL)
-			idx = SSL_PKEY_RSA_ENC;
+		idx = SSL_PKEY_RSA;
 	} else if ((alg_a & SSL_aECDSA) &&
 	    (c->pkeys[SSL_PKEY_ECC].privatekey != NULL))
 		idx = SSL_PKEY_ECC;

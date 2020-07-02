@@ -1,4 +1,4 @@
-/* $OpenBSD: ssl_tlsext.c,v 1.63 2020/04/21 17:06:16 jsing Exp $ */
+/* $OpenBSD: ssl_tlsext.c,v 1.74 2020/05/29 17:39:42 jsing Exp $ */
 /*
  * Copyright (c) 2016, 2017, 2019 Joel Sing <jsing@openbsd.org>
  * Copyright (c) 2017 Doug Hogan <doug@openbsd.org>
@@ -16,6 +16,8 @@
  * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
+
+#include <ctype.h>
 
 #include <openssl/ocsp.h>
 
@@ -221,6 +223,33 @@ tlsext_supportedgroups_server_parse(SSL *s, CBS *cbs, int *alert)
 	if (!s->internal->hit) {
 		uint16_t *groups;
 		int i;
+
+		if (S3I(s)->hs_tls13.hrr) {
+			if (SSI(s)->tlsext_supportedgroups == NULL) {
+				*alert = SSL_AD_HANDSHAKE_FAILURE;
+				return 0;
+			}
+			/*
+			 * In the case of TLSv1.3 the client cannot change
+			 * the supported groups.
+			 */
+			if (groups_len != SSI(s)->tlsext_supportedgroups_length) {
+				*alert = SSL_AD_ILLEGAL_PARAMETER;
+				return 0;
+			}
+			for (i = 0; i < groups_len; i++) {
+				uint16_t group;
+
+				if (!CBS_get_u16(&grouplist, &group))
+					goto err;
+				if (SSI(s)->tlsext_supportedgroups[i] != group) {
+					*alert = SSL_AD_ILLEGAL_PARAMETER;
+					return 0;
+				}
+			}
+
+			return 1;
+		}
 
 		if (SSI(s)->tlsext_supportedgroups != NULL)
 			goto err;
@@ -645,6 +674,55 @@ tlsext_sni_client_build(SSL *s, CBB *cbb)
 	return 1;
 }
 
+/*
+ * Validate that the CBS contains only a hostname consisting of RFC 5890
+ * compliant A-labels (see RFC 6066 section 3). Not a complete check
+ * since we don't parse punycode to verify its validity but limits to
+ * correct structure and character set.
+ */
+int
+tlsext_sni_is_valid_hostname(CBS *cbs)
+{
+	uint8_t prev, c = 0;
+	int component = 0;
+	CBS hostname;
+
+	CBS_dup(cbs, &hostname);
+
+	if (CBS_len(&hostname) > TLSEXT_MAXLEN_host_name)
+		return 0;
+
+	while(CBS_len(&hostname) > 0) {
+		prev = c;
+		if (!CBS_get_u8(&hostname, &c))
+			return 0;
+		/* Everything has to be ASCII, with no NUL byte. */
+		if (!isascii(c) || c == '\0')
+			return 0;
+		/* It must be alphanumeric, a '-', or a '.' */
+		if (!isalnum(c) && c != '-' && c != '.')
+			return 0;
+		/* '-' and '.' must not start a component or be at the end. */
+		if (component == 0 || CBS_len(&hostname) == 0) {
+			if (c == '-' || c == '.')
+				return 0;
+		}
+		if (c == '.') {
+			/* Components can not end with a dash. */
+			if (prev == '-')
+				return 0;
+			/* Start new component */
+			component = 0;
+			continue;
+		}
+		/* Components must be 63 chars or less. */
+		if (++component > 63)
+			return 0;
+	}
+
+	return 1;
+}
+
 int
 tlsext_sni_server_parse(SSL *s, CBS *cbs, int *alert)
 {
@@ -654,52 +732,66 @@ tlsext_sni_server_parse(SSL *s, CBS *cbs, int *alert)
 	if (!CBS_get_u16_length_prefixed(cbs, &server_name_list))
 		goto err;
 
-	/*
-	 * RFC 6066 section 3 forbids multiple host names with the same type.
-	 * Additionally, only one type (host_name) is specified.
-	 */
 	if (!CBS_get_u8(&server_name_list, &name_type))
 		goto err;
-	if (name_type != TLSEXT_NAMETYPE_host_name)
+	/*
+	 * RFC 6066 section 3, only one type (host_name) is specified.
+	 * We do not tolerate unknown types, neither does BoringSSL.
+	 * other implementations appear more tolerant.
+	 */
+	if (name_type != TLSEXT_NAMETYPE_host_name) {
+		*alert = SSL3_AD_ILLEGAL_PARAMETER;
 		goto err;
+	}
+
 
 	if (!CBS_get_u16_length_prefixed(&server_name_list, &host_name))
 		goto err;
-	if (CBS_len(&host_name) == 0 ||
-	    CBS_len(&host_name) > TLSEXT_MAXLEN_host_name ||
-	    CBS_contains_zero_byte(&host_name)) {
-		*alert = TLS1_AD_UNRECOGNIZED_NAME;
-		return 0;
+	/*
+	 * RFC 6066 section 3 specifies a host name must be at least 1 byte
+	 * so 0 length is a decode error.
+	 */
+	if (CBS_len(&host_name) < 1)
+		goto err;
+
+	if (!tlsext_sni_is_valid_hostname(&host_name)) {
+		*alert = SSL3_AD_ILLEGAL_PARAMETER;
+		goto err;
 	}
 
-	if (s->internal->hit) {
+	if (s->internal->hit || S3I(s)->hs_tls13.hrr) {
 		if (s->session->tlsext_hostname == NULL) {
 			*alert = TLS1_AD_UNRECOGNIZED_NAME;
-			return 0;
+			goto err;
 		}
 		if (!CBS_mem_equal(&host_name, s->session->tlsext_hostname,
 		    strlen(s->session->tlsext_hostname))) {
 			*alert = TLS1_AD_UNRECOGNIZED_NAME;
-			return 0;
+			goto err;
 		}
 	} else {
 		if (s->session->tlsext_hostname != NULL)
 			goto err;
 		if (!CBS_strdup(&host_name, &s->session->tlsext_hostname)) {
 			*alert = TLS1_AD_INTERNAL_ERROR;
-			return 0;
+			goto err;
 		}
 	}
 
-	if (CBS_len(&server_name_list) != 0)
+	/*
+	 * RFC 6066 section 3 forbids multiple host names with the same type,
+	 * therefore we allow only one entry.
+	 */
+	if (CBS_len(&server_name_list) != 0) {
+		*alert = SSL3_AD_ILLEGAL_PARAMETER;
 		goto err;
+	}
 	if (CBS_len(cbs) != 0)
 		goto err;
 
 	return 1;
 
  err:
-	*alert = SSL_AD_DECODE_ERROR;
 	return 0;
 }
 
@@ -884,24 +976,75 @@ tlsext_ocsp_server_parse(SSL *s, CBS *cbs, int *alert)
 int
 tlsext_ocsp_server_needs(SSL *s)
 {
+	if (s->version >= TLS1_3_VERSION &&
+	    s->tlsext_status_type == TLSEXT_STATUSTYPE_ocsp &&
+	    s->ctx->internal->tlsext_status_cb != NULL) {
+		s->internal->tlsext_status_expected = 0;
+		if (s->ctx->internal->tlsext_status_cb(s,
+		    s->ctx->internal->tlsext_status_arg) == SSL_TLSEXT_ERR_OK &&
+		    s->internal->tlsext_ocsp_resp_len > 0)
+			s->internal->tlsext_status_expected = 1;
+	}
 	return s->internal->tlsext_status_expected;
 }
 
 int
 tlsext_ocsp_server_build(SSL *s, CBB *cbb)
 {
+	CBB ocsp_response;
+
+	if (s->version >= TLS1_3_VERSION) {
+		if (!CBB_add_u8(cbb, TLSEXT_STATUSTYPE_ocsp))
+			return 0;
+		if (!CBB_add_u24_length_prefixed(cbb, &ocsp_response))
+			return 0;
+		if (!CBB_add_bytes(&ocsp_response,
+		    s->internal->tlsext_ocsp_resp,
+		    s->internal->tlsext_ocsp_resp_len))
+			return 0;
+		if (!CBB_flush(cbb))
+			return 0;
+	}
 	return 1;
 }
 
 int
 tlsext_ocsp_client_parse(SSL *s, CBS *cbs, int *alert)
 {
-	if (s->tlsext_status_type == -1) {
-		*alert = TLS1_AD_UNSUPPORTED_EXTENSION;
-		return 0;
+	CBS response;
+	uint16_t version = TLS1_get_client_version(s);
+	uint8_t status_type;
+
+	if (version >= TLS1_3_VERSION) {
+		if (!CBS_get_u8(cbs, &status_type)) {
+			SSLerror(s, SSL_R_LENGTH_MISMATCH);
+			return 0;
+		}
+		if (status_type != TLSEXT_STATUSTYPE_ocsp) {
+			SSLerror(s, SSL_R_UNSUPPORTED_STATUS_TYPE);
+			return 0;
+		}
+		if (!CBS_get_u24_length_prefixed(cbs, &response)) {
+			SSLerror(s, SSL_R_LENGTH_MISMATCH);
+			return 0;
+		}
+		if (CBS_len(&response) > 65536) {
+			SSLerror(s, SSL_R_DATA_LENGTH_TOO_LONG);
+			return 0;
+		}
+		if (!CBS_stow(&response, &s->internal->tlsext_ocsp_resp,
+		    &s->internal->tlsext_ocsp_resp_len)) {
+			*alert = SSL_AD_INTERNAL_ERROR;
+			return 0;
+		}
+	} else {
+		if (s->tlsext_status_type == -1) {
+			*alert = TLS1_AD_UNSUPPORTED_EXTENSION;
+			return 0;
+		}
+		/* Set flag to expect CertificateStatus message */
+		s->internal->tlsext_status_expected = 1;
 	}
-	/* Set flag to expect CertificateStatus message */
-	s->internal->tlsext_status_expected = 1;
 	return 1;
 }
 
@@ -1333,6 +1476,13 @@ tlsext_keyshare_server_needs(SSL *s)
 int
 tlsext_keyshare_server_build(SSL *s, CBB *cbb)
 {
+	/* In the case of a HRR, we only send the server selected group. */
+	if (S3I(s)->hs_tls13.hrr) {
+		if (S3I(s)->hs_tls13.server_group == 0)
+			return 0;
+		return CBB_add_u16(cbb, S3I(s)->hs_tls13.server_group);
+	}
+
 	if (S3I(s)->hs_tls13.key_share == NULL)
 		return 0;
 
@@ -1429,7 +1579,7 @@ tlsext_versions_server_parse(SSL *s, CBS *cbs, int *alert)
 	if (!CBS_get_u8_length_prefixed(cbs, &versions))
 		goto err;
 
-	 while (CBS_len(&versions) > 0) {
+	while (CBS_len(&versions) > 0) {
 		if (!CBS_get_u16(&versions, &version))
 			goto err;
 		/*
@@ -1983,7 +2133,6 @@ tlsext_parse(SSL *s, CBS *cbs, int *alert, int is_server, uint16_t msg_type)
 static void
 tlsext_server_reset_state(SSL *s)
 {
-	s->internal->servername_done = 0;
 	s->tlsext_status_type = -1;
 	S3I(s)->renegotiate_seen = 0;
 	free(S3I(s)->alpn_selected);
@@ -2000,8 +2149,9 @@ tlsext_server_build(SSL *s, CBB *cbb, uint16_t msg_type)
 int
 tlsext_server_parse(SSL *s, CBS *cbs, int *alert, uint16_t msg_type)
 {
-	/* XXX - this possibly should be done by the caller... */
-	tlsext_server_reset_state(s);
+	/* XXX - this should be done by the caller... */
+	if (msg_type == SSL_TLSEXT_MSG_CH)
+		tlsext_server_reset_state(s);
 
 	return tlsext_parse(s, cbs, alert, 1, msg_type);
 }
@@ -2023,8 +2173,9 @@ tlsext_client_build(SSL *s, CBB *cbb, uint16_t msg_type)
 int
 tlsext_client_parse(SSL *s, CBS *cbs, int *alert, uint16_t msg_type)
 {
-	/* XXX - this possibly should be done by the caller... */
-	tlsext_client_reset_state(s);
+	/* XXX - this should be done by the caller... */
+	if (msg_type == SSL_TLSEXT_MSG_SH)
+		tlsext_client_reset_state(s);
 
 	return tlsext_parse(s, cbs, alert, 0, msg_type);
 }

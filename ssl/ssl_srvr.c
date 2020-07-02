@@ -1,4 +1,4 @@
-/* $OpenBSD: ssl_srvr.c,v 1.73 2020/03/06 16:31:30 tb Exp $ */
+/* $OpenBSD: ssl_srvr.c,v 1.77 2020/05/31 16:36:35 jsing Exp $ */
 /* Copyright (C) 1995-1998 Eric Young (eay@cryptsoft.com)
  * All rights reserved.
  *
@@ -834,6 +834,11 @@ ssl3_get_client_hello(SSL *s)
 		goto truncated;
 	if (!CBS_get_u8_length_prefixed(&cbs, &session_id))
 		goto truncated;
+	if (CBS_len(&session_id) > SSL3_SESSION_ID_SIZE) {
+		al = SSL_AD_ILLEGAL_PARAMETER;
+		SSLerror(s, SSL_R_SSL3_SESSION_ID_TOO_LONG);
+		goto f_err;
+	}
 	if (SSL_IS_DTLS(s)) {
 		if (!CBS_get_u8_length_prefixed(&cbs, &cookie))
 			goto truncated;
@@ -847,6 +852,8 @@ ssl3_get_client_hello(SSL *s)
 	 * Use version from inside client hello, not from record header.
 	 * (may differ: see RFC 2246, Appendix E, second paragraph)
 	 */
+	if (!ssl_downgrade_max_version(s, &max_version))
+		goto err;
 	if (ssl_max_shared_version(s, client_version, &shared_version) != 1) {
 		SSLerror(s, SSL_R_WRONG_VERSION_NUMBER);
 		if ((s->client_version >> 8) == SSL3_VERSION_MAJOR &&
@@ -1042,8 +1049,6 @@ ssl3_get_client_hello(SSL *s)
 	 */
 	arc4random_buf(s->s3->server_random, SSL3_RANDOM_SIZE);
 
-	if (!SSL_IS_DTLS(s) && !ssl_enabled_version_range(s, NULL, &max_version))
-		goto err;
 	if (!SSL_IS_DTLS(s) && max_version >= TLS1_2_VERSION &&
 	    s->version < max_version) {
 		/*
@@ -1688,7 +1693,7 @@ ssl3_get_client_kex_rsa(SSL *s, CBS *cbs)
 	fakekey[0] = s->client_version >> 8;
 	fakekey[1] = s->client_version & 0xff;
 
-	pkey = s->cert->pkeys[SSL_PKEY_RSA_ENC].privatekey;
+	pkey = s->cert->pkeys[SSL_PKEY_RSA].privatekey;
 	if ((pkey == NULL) || (pkey->type != EVP_PKEY_RSA) ||
 	    (pkey->pkey.rsa == NULL)) {
 		al = SSL_AD_HANDSHAKE_FAILURE;
@@ -2619,7 +2624,7 @@ ssl3_send_cert_status(SSL *s)
 		if (!CBB_add_u24_length_prefixed(&certstatus, &ocspresp))
 			goto err;
 		if (!CBB_add_bytes(&ocspresp, s->internal->tlsext_ocsp_resp,
-		    s->internal->tlsext_ocsp_resplen))
+		    s->internal->tlsext_ocsp_resp_len))
 			goto err;
 		if (!ssl3_handshake_msg_finish(s, &cbb))
 			goto err;

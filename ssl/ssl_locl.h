@@ -1,4 +1,4 @@
-/* $OpenBSD: ssl_locl.h,v 1.272 2020/04/18 14:07:56 jsing Exp $ */
+/* $OpenBSD: ssl_locl.h,v 1.279 2020/05/31 18:03:32 jsing Exp $ */
 /* Copyright (C) 1995-1998 Eric Young (eay@cryptsoft.com)
  * All rights reserved.
  *
@@ -173,6 +173,10 @@ __BEGIN_HIDDEN_DECLS
 #define LIBRESSL_HAS_TLS1_3_CLIENT
 #endif
 
+#ifndef LIBRESSL_HAS_TLS1_3_SERVER
+#define LIBRESSL_HAS_TLS1_3_SERVER
+#endif
+
 #if defined(LIBRESSL_HAS_TLS1_3_CLIENT) || defined(LIBRESSL_HAS_TLS1_3_SERVER)
 #define LIBRESSL_HAS_TLS1_3
 #endif
@@ -329,12 +333,10 @@ __BEGIN_HIDDEN_DECLS
 #define SSL_USE_TLS1_3_CIPHERS(s) \
 	(s->method->internal->ssl3_enc->enc_flags & SSL_ENC_FLAG_TLS1_3_CIPHERS)
 
-#define SSL_PKEY_RSA_ENC	0
-#define SSL_PKEY_RSA_SIGN	1
-#define SSL_PKEY_DH_RSA		2
-#define SSL_PKEY_ECC            3
-#define SSL_PKEY_GOST01		4
-#define SSL_PKEY_NUM		5
+#define SSL_PKEY_RSA		0
+#define SSL_PKEY_ECC		1
+#define SSL_PKEY_GOST01		2
+#define SSL_PKEY_NUM		3
 
 #define SSL_MAX_EMPTY_RECORDS	32
 
@@ -433,6 +435,12 @@ typedef struct ssl_handshake_st {
 	uint8_t *sigalgs;
 } SSL_HANDSHAKE;
 
+typedef struct cert_pkey_st {
+	X509 *x509;
+	EVP_PKEY *privatekey;
+	STACK_OF(X509) *chain;
+} CERT_PKEY;
+
 typedef struct ssl_handshake_tls13_st {
 	uint16_t min_version;
 	uint16_t max_version;
@@ -440,6 +448,10 @@ typedef struct ssl_handshake_tls13_st {
 
 	int use_legacy;
 	int hrr;
+
+	/* Certificate and sigalg selected for use (static pointers). */
+	const CERT_PKEY *cpk;
+	const struct ssl_sigalg *sigalg;
 
 	/* Version proposed by peer server. */
 	uint16_t server_version;
@@ -736,20 +748,15 @@ typedef struct ssl_internal_st {
 	long max_cert_list;
 	int first_packet;
 
-	int servername_done;	/* no further mod of servername
-				   0 : call the servername extension callback.
-				   1 : prepare 2, allow last ack just after in server callback.
-				   2 : don't call servername callback, no ack in server hello
-				   */
-
 	/* Expect OCSP CertificateStatus message */
 	int tlsext_status_expected;
 	/* OCSP status request only */
 	STACK_OF(OCSP_RESPID) *tlsext_ocsp_ids;
 	X509_EXTENSIONS *tlsext_ocsp_exts;
+
 	/* OCSP response received or to be sent */
 	unsigned char *tlsext_ocsp_resp;
-	int tlsext_ocsp_resplen;
+	size_t tlsext_ocsp_resp_len;
 
 	/* RFC4507 session ticket expected to be received or sent */
 	int tlsext_ticket_expected;
@@ -988,12 +995,6 @@ typedef struct dtls1_state_internal_st {
 } DTLS1_STATE_INTERNAL;
 #define D1I(s) (s->d1->internal)
 
-typedef struct cert_pkey_st {
-	X509 *x509;
-	EVP_PKEY *privatekey;
-	STACK_OF(X509) *chain;
-} CERT_PKEY;
-
 typedef struct cert_st {
 	/* Current active set */
 	CERT_PKEY *key; /* ALWAYS points to an element of the pkeys array
@@ -1093,7 +1094,7 @@ int ssl_version_set_min(const SSL_METHOD *meth, uint16_t ver, uint16_t max_ver,
     uint16_t *out_ver);
 int ssl_version_set_max(const SSL_METHOD *meth, uint16_t ver, uint16_t min_ver,
     uint16_t *out_ver);
-uint16_t ssl_max_server_version(SSL *s);
+int ssl_downgrade_max_version(SSL *s, uint16_t *max_ver);
 int ssl_cipher_is_permitted(const SSL_CIPHER *cipher, uint16_t min_ver,
     uint16_t max_ver);
 
