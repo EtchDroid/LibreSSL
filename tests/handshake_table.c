@@ -1,4 +1,4 @@
-/*	$OpenBSD: handshake_table.c,v 1.12 2020/03/10 17:15:37 jsing Exp $	*/
+/*	$OpenBSD: handshake_table.c,v 1.14 2020/05/04 14:20:36 tb Exp $	*/
 /*
  * Copyright (c) 2019 Theo Buehler <tb@openbsd.org>
  *
@@ -20,6 +20,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
+
+#define MAX_FLAGS (UINT8_MAX + 1)
 
 #include "tls13_handshake.h"
 
@@ -86,16 +88,16 @@ struct child {
 
 static struct child stateinfo[][TLS13_NUM_MESSAGE_TYPES] = {
 	[CLIENT_HELLO] = {
+		{SERVER_HELLO_RETRY_REQUEST, DEFAULT, 0, 0},
+		{SERVER_HELLO, WITHOUT_HRR, 0, 0},
+	},
+	[SERVER_HELLO_RETRY_REQUEST] = {
+		{CLIENT_HELLO_RETRY, DEFAULT, 0, 0},
+	},
+	[CLIENT_HELLO_RETRY] = {
 		{SERVER_HELLO, DEFAULT, 0, 0},
 	},
 	[SERVER_HELLO] = {
-		{SERVER_ENCRYPTED_EXTENSIONS, DEFAULT, 0, 0},
-		{CLIENT_HELLO_RETRY, WITH_HRR, 0, 0},
-	},
-	[CLIENT_HELLO_RETRY] = {
-		{SERVER_HELLO_RETRY, DEFAULT, 0, 0},
-	},
-	[SERVER_HELLO_RETRY] = {
 		{SERVER_ENCRYPTED_EXTENSIONS, DEFAULT, 0, 0},
 	},
 	[SERVER_ENCRYPTED_EXTENSIONS] = {
@@ -134,7 +136,7 @@ static struct child stateinfo[][TLS13_NUM_MESSAGE_TYPES] = {
 const size_t	 stateinfo_count = sizeof(stateinfo) / sizeof(stateinfo[0]);
 
 void		 build_table(enum tls13_message_type
-		     table[UINT8_MAX][TLS13_NUM_MESSAGE_TYPES],
+		     table[MAX_FLAGS][TLS13_NUM_MESSAGE_TYPES],
 		     struct child current, struct child end,
 		     struct child path[], uint8_t flags, unsigned int depth);
 size_t		 count_handshakes(void);
@@ -152,7 +154,7 @@ void		 fprint_flags(FILE *stream, uint8_t flags);
 const char	*mt2str(enum tls13_message_type mt);
 __dead void	 usage(void);
 int		 verify_table(enum tls13_message_type
-		     table[UINT8_MAX][TLS13_NUM_MESSAGE_TYPES], int print);
+		     table[MAX_FLAGS][TLS13_NUM_MESSAGE_TYPES], int print);
 
 const char *
 flag2str(uint8_t flag)
@@ -172,8 +174,8 @@ flag2str(uint8_t flag)
 	case WITHOUT_CR:
 		ret = "WITHOUT_CR";
 		break;
-	case WITH_HRR:
-		ret = "WITH_HRR";
+	case WITHOUT_HRR:
+		ret = "WITHOUT_HRR";
 		break;
 	case WITH_PSK:
 		ret = "WITH_PSK";
@@ -221,8 +223,8 @@ mt2str(enum tls13_message_type mt)
 	case SERVER_HELLO:
 		ret = "SERVER_HELLO";
 		break;
-	case SERVER_HELLO_RETRY:
-		ret = "SERVER_HELLO_RETRY";
+	case SERVER_HELLO_RETRY_REQUEST:
+		ret = "SERVER_HELLO_RETRY_REQUEST";
 		break;
 	case SERVER_ENCRYPTED_EXTENSIONS:
 		ret = "SERVER_ENCRYPTED_EXTENSIONS";
@@ -370,7 +372,7 @@ count_handshakes(void)
 }
 
 void
-build_table(enum tls13_message_type table[UINT8_MAX][TLS13_NUM_MESSAGE_TYPES],
+build_table(enum tls13_message_type table[MAX_FLAGS][TLS13_NUM_MESSAGE_TYPES],
     struct child current, struct child end, struct child path[], uint8_t flags,
     unsigned int depth)
 {
@@ -409,7 +411,7 @@ build_table(enum tls13_message_type table[UINT8_MAX][TLS13_NUM_MESSAGE_TYPES],
 }
 
 int
-verify_table(enum tls13_message_type table[UINT8_MAX][TLS13_NUM_MESSAGE_TYPES],
+verify_table(enum tls13_message_type table[MAX_FLAGS][TLS13_NUM_MESSAGE_TYPES],
     int print)
 {
 	int	success = 1, i;
@@ -458,9 +460,11 @@ int
 main(int argc, char *argv[])
 {
 	static enum tls13_message_type
-	    hs_table[UINT8_MAX][TLS13_NUM_MESSAGE_TYPES] = {
+	    hs_table[MAX_FLAGS][TLS13_NUM_MESSAGE_TYPES] = {
 		[INITIAL] = {
 			CLIENT_HELLO,
+			SERVER_HELLO_RETRY_REQUEST,
+			CLIENT_HELLO_RETRY,
 			SERVER_HELLO,
 		},
 	};
@@ -475,6 +479,7 @@ main(int argc, char *argv[])
 	unsigned int	depth = 0;
 	int		ch, graphviz = 0, print = 0;
 
+#ifndef _MSC_VER
 	while ((ch = getopt(argc, argv, "Cg")) != -1) {
 		switch (ch) {
 		case 'C':
@@ -492,6 +497,7 @@ main(int argc, char *argv[])
 
 	if (argc != 0)
 		usage();
+#endif
 
 	if (graphviz && print)
 		usage();

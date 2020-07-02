@@ -1,4 +1,4 @@
-/* $OpenBSD: tls13_record_layer.c,v 1.30 2020/03/16 15:11:35 tb Exp $ */
+/* $OpenBSD: tls13_record_layer.c,v 1.33 2020/05/03 15:57:25 jsing Exp $ */
 /*
  * Copyright (c) 2018, 2019 Joel Sing <jsing@openbsd.org>
  *
@@ -166,7 +166,7 @@ tls13_record_layer_rbuf(struct tls13_record_layer *rl, CBS *cbs)
 	CBS_dup(&rl->rbuf_cbs, cbs);
 }
 
-uint8_t tls13_max_seq_num[TLS13_RECORD_SEQ_NUM_LEN] = {
+static const uint8_t tls13_max_seq_num[TLS13_RECORD_SEQ_NUM_LEN] = {
 	0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
 };
 
@@ -787,7 +787,7 @@ tls13_record_layer_read_record(struct tls13_record_layer *rl)
 	 * ignored.
 	 */
 	if (content_type == SSL3_RT_CHANGE_CIPHER_SPEC) {
-		if (!rl->ccs_allowed || rl->ccs_seen)
+		if (!rl->ccs_allowed || rl->ccs_seen >= 2)
 			return tls13_send_alert(rl, SSL_AD_UNEXPECTED_MESSAGE);
 		if (!tls13_record_content(rl->rrec, &cbs))
 			return tls13_send_alert(rl, TLS1_AD_DECODE_ERROR);
@@ -795,7 +795,7 @@ tls13_record_layer_read_record(struct tls13_record_layer *rl)
 			return tls13_send_alert(rl, TLS1_AD_DECODE_ERROR);
 		if (ccs != 1)
 			return tls13_send_alert(rl, SSL_AD_ILLEGAL_PARAMETER);
-		rl->ccs_seen = 1;
+		rl->ccs_seen++;
 		tls13_record_layer_rrec_free(rl);
 		return TLS13_IO_WANT_RETRY;
 	}
@@ -835,7 +835,7 @@ tls13_record_layer_read_record(struct tls13_record_layer *rl)
 	return TLS13_IO_FAILURE;
 }
 
-ssize_t
+static ssize_t
 tls13_record_layer_pending(struct tls13_record_layer *rl, uint8_t content_type)
 {
 	if (rl->rbuf_content_type != content_type)
@@ -946,7 +946,7 @@ tls13_record_layer_read_internal(struct tls13_record_layer *rl,
 	return TLS13_IO_FAILURE;
 }
 
-ssize_t
+static ssize_t
 tls13_record_layer_peek(struct tls13_record_layer *rl, uint8_t content_type,
     uint8_t *buf, size_t n)
 {
@@ -959,7 +959,7 @@ tls13_record_layer_peek(struct tls13_record_layer *rl, uint8_t content_type,
 	return ret;
 }
 
-ssize_t
+static ssize_t
 tls13_record_layer_read(struct tls13_record_layer *rl, uint8_t content_type,
     uint8_t *buf, size_t n)
 {

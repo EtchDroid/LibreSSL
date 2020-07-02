@@ -1,4 +1,4 @@
-/*	$OpenBSD: tls13_lib.c,v 1.34 2020/02/15 14:40:38 jsing Exp $ */
+/*	$OpenBSD: tls13_lib.c,v 1.36 2020/04/28 20:30:41 jsing Exp $ */
 /*
  * Copyright (c) 2018, 2019 Joel Sing <jsing@openbsd.org>
  * Copyright (c) 2019 Bob Beck <beck@openbsd.org>
@@ -24,12 +24,45 @@
 #include "tls13_internal.h"
 
 /*
- * RFC 8446 section 4.1.3, magic values which must be set by the
- * server in server random if it is willing to downgrade but supports
- * tls v1.3
+ * Downgrade sentinels - RFC 8446 section 4.1.3, magic values which must be set
+ * by the server in server random if it is willing to downgrade but supports
+ * TLSv1.3
  */
-uint8_t tls13_downgrade_12[8] = {0x44, 0x4f, 0x57, 0x4e, 0x47, 0x52, 0x44, 0x01};
-uint8_t tls13_downgrade_11[8] = {0x44, 0x4f, 0x57, 0x4e, 0x47, 0x52, 0x44, 0x00};
+const uint8_t tls13_downgrade_12[8] = {
+	0x44, 0x4f, 0x57, 0x4e, 0x47, 0x52, 0x44, 0x01,
+};
+const uint8_t tls13_downgrade_11[8] = {
+	0x44, 0x4f, 0x57, 0x4e, 0x47, 0x52, 0x44, 0x00,
+};
+
+/*
+ * HelloRetryRequest hash - RFC 8446 section 4.1.3.
+ */
+const uint8_t tls13_hello_retry_request_hash[32] = {
+	0xcf, 0x21, 0xad, 0x74, 0xe5, 0x9a, 0x61, 0x11,
+	0xbe, 0x1d, 0x8c, 0x02, 0x1e, 0x65, 0xb8, 0x91,
+	0xc2, 0xa2, 0x11, 0x16, 0x7a, 0xbb, 0x8c, 0x5e,
+	0x07, 0x9e, 0x09, 0xe2, 0xc8, 0xa8, 0x33, 0x9c,
+};
+
+/*
+ * Certificate Verify padding - RFC 8446 section 4.4.3.
+ */
+const uint8_t tls13_cert_verify_pad[64] = {
+	0x20, 0x20, 0x20, 0x20, 0x20, 0x20, 0x20, 0x20,
+	0x20, 0x20, 0x20, 0x20, 0x20, 0x20, 0x20, 0x20,
+	0x20, 0x20, 0x20, 0x20, 0x20, 0x20, 0x20, 0x20,
+	0x20, 0x20, 0x20, 0x20, 0x20, 0x20, 0x20, 0x20,
+	0x20, 0x20, 0x20, 0x20, 0x20, 0x20, 0x20, 0x20,
+	0x20, 0x20, 0x20, 0x20, 0x20, 0x20, 0x20, 0x20,
+	0x20, 0x20, 0x20, 0x20, 0x20, 0x20, 0x20, 0x20,
+	0x20, 0x20, 0x20, 0x20, 0x20, 0x20, 0x20, 0x20,
+};
+
+const uint8_t tls13_cert_client_verify_context[] =
+    "TLS 1.3, client CertificateVerify";
+const uint8_t tls13_cert_server_verify_context[] =
+    "TLS 1.3, server CertificateVerify";
 
 const EVP_AEAD *
 tls13_cipher_aead(const SSL_CIPHER *cipher)
@@ -311,23 +344,6 @@ tls13_ctx_free(struct tls13_ctx *ctx)
 	freezero(ctx, sizeof(struct tls13_ctx));
 }
 
-/*
- * Certificate Verify padding - RFC 8446 section 4.4.3.
- */
-uint8_t tls13_cert_verify_pad[64] = {
-	0x20, 0x20, 0x20, 0x20, 0x20, 0x20, 0x20, 0x20,
-	0x20, 0x20, 0x20, 0x20, 0x20, 0x20, 0x20, 0x20,
-	0x20, 0x20, 0x20, 0x20, 0x20, 0x20, 0x20, 0x20,
-	0x20, 0x20, 0x20, 0x20, 0x20, 0x20, 0x20, 0x20,
-	0x20, 0x20, 0x20, 0x20, 0x20, 0x20, 0x20, 0x20,
-	0x20, 0x20, 0x20, 0x20, 0x20, 0x20, 0x20, 0x20,
-	0x20, 0x20, 0x20, 0x20, 0x20, 0x20, 0x20, 0x20,
-	0x20, 0x20, 0x20, 0x20, 0x20, 0x20, 0x20, 0x20,
-};
-
-uint8_t tls13_cert_client_verify_context[] = "TLS 1.3, client CertificateVerify";
-uint8_t tls13_cert_server_verify_context[] = "TLS 1.3, server CertificateVerify";
-
 int
 tls13_cert_add(CBB *cbb, X509 *cert)
 {
@@ -352,4 +368,47 @@ tls13_cert_add(CBB *cbb, X509 *cert)
 		return 0;
 
 	return 1;
+}
+
+int
+tls13_synthetic_handshake_message(struct tls13_ctx *ctx)
+{
+	struct tls13_handshake_msg *hm = NULL;
+	unsigned char buf[EVP_MAX_MD_SIZE];
+	size_t hash_len;
+	CBB cbb;
+	CBS cbs;
+	SSL *s = ctx->ssl;
+	int ret = 0;
+
+	/*
+	 * Replace ClientHello with synthetic handshake message - see
+	 * RFC 8446 section 4.4.1.
+	 */
+	if (!tls1_transcript_hash_init(s))
+		goto err;
+	if (!tls1_transcript_hash_value(s, buf, sizeof(buf), &hash_len))
+		goto err;
+
+	if ((hm = tls13_handshake_msg_new()) == NULL)
+		goto err;
+	if (!tls13_handshake_msg_start(hm, &cbb, TLS13_MT_MESSAGE_HASH))
+		goto err;
+	if (!CBB_add_bytes(&cbb, buf, hash_len))
+		goto err;
+	if (!tls13_handshake_msg_finish(hm))
+		goto err;
+
+	tls13_handshake_msg_data(hm, &cbs);
+
+	tls1_transcript_reset(ctx->ssl);
+	if (!tls1_transcript_record(ctx->ssl, CBS_data(&cbs), CBS_len(&cbs)))
+		goto err;
+
+	ret = 1;
+
+ err:
+	tls13_handshake_msg_free(hm);
+
+	return ret;
 }
