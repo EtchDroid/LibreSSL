@@ -384,6 +384,21 @@ set(
 	cmac/cm_ameth.c
 	cmac/cm_pmeth.c
 	cmac/cmac.c
+	cms/cms_asn1.c
+	cms/cms_att.c
+	cms/cms_cd.c
+	cms/cms_dd.c
+	cms/cms_enc.c
+	cms/cms_env.c
+	cms/cms_err.c
+	cms/cms_ess.c
+	cms/cms_io.c
+	cms/cms_kari.c
+	cms/cms_lcl.h
+	cms/cms_lib.c
+	cms/cms_pwri.c
+	cms/cms_sd.c
+	cms/cms_smime.c
 	comp/c_rle.c
 	comp/c_zlib.c
 	comp/comp_err.c
@@ -968,18 +983,16 @@ target_include_directories(crypto
 	PUBLIC
 		../include)
 
-if (BUILD_SHARED_LIBS)
-	export_symbol(crypto ${CMAKE_CURRENT_BINARY_DIR}/crypto_p.sym)
-	target_link_libraries(crypto ${PLATFORM_LIBS})
-	if (WIN32)
-		set(CRYPTO_POSTFIX -${CRYPTO_MAJOR_VERSION})
-	endif()
-	set_target_properties(crypto PROPERTIES
-		OUTPUT_NAME crypto${CRYPTO_POSTFIX}
-		ARCHIVE_OUTPUT_NAME crypto${CRYPTO_POSTFIX})
-	set_target_properties(crypto PROPERTIES VERSION
-		${CRYPTO_VERSION} SOVERSION ${CRYPTO_MAJOR_VERSION})
+export_symbol(crypto ${CMAKE_CURRENT_BINARY_DIR}/crypto_p.sym)
+target_link_libraries(crypto ${PLATFORM_LIBS})
+if (WIN32)
+	set(CRYPTO_POSTFIX -${CRYPTO_MAJOR_VERSION})
 endif()
+set_target_properties(crypto PROPERTIES
+	OUTPUT_NAME crypto${CRYPTO_POSTFIX}
+	ARCHIVE_OUTPUT_NAME crypto${CRYPTO_POSTFIX})
+set_target_properties(crypto PROPERTIES VERSION
+	${CRYPTO_VERSION} SOVERSION ${CRYPTO_MAJOR_VERSION})
 
 if(ENABLE_LIBRESSL_INSTALL)
 	install(

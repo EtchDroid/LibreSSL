@@ -131,9 +131,15 @@ check_PROGRAMS += cipherstest
 cipherstest_SOURCES = cipherstest.c
 
 # clienttest
-TESTS += clienttest
-check_PROGRAMS += clienttest
-clienttest_SOURCES = clienttest.c
+# disabled
+#TESTS += clienttest
+#check_PROGRAMS += clienttest
+#clienttest_SOURCES = clienttest.c
+
+# cmstest
+TESTS += cmstest
+check_PROGRAMS += cmstest
+cmstest_SOURCES = cmstest.c
 
 # configtest
 TESTS += configtest

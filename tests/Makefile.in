@@ -96,7 +96,7 @@ TESTS = aeadtest.sh aes_wrap$(EXEEXT) $(am__append_2) asn1evp$(EXEEXT) \
 	bn_rand_interval$(EXEEXT) bntest$(EXEEXT) \
 	bn_to_string$(EXEEXT) buffertest$(EXEEXT) \
 	bytestringtest$(EXEEXT) casttest$(EXEEXT) chachatest$(EXEEXT) \
-	cipher_list$(EXEEXT) cipherstest$(EXEEXT) clienttest$(EXEEXT) \
+	cipher_list$(EXEEXT) cipherstest$(EXEEXT) cmstest$(EXEEXT) \
 	configtest$(EXEEXT) cts128test$(EXEEXT) destest$(EXEEXT) \
 	dhtest$(EXEEXT) dsatest$(EXEEXT) ecdhtest$(EXEEXT) \
 	ecdsatest$(EXEEXT) ectest$(EXEEXT) enginetest$(EXEEXT) \
@@ -123,7 +123,7 @@ check_PROGRAMS = aeadtest$(EXEEXT) aes_wrap$(EXEEXT) $(am__EXEEXT_1) \
 	bnaddsub$(EXEEXT) bn_rand_interval$(EXEEXT) bntest$(EXEEXT) \
 	bn_to_string$(EXEEXT) buffertest$(EXEEXT) \
 	bytestringtest$(EXEEXT) casttest$(EXEEXT) chachatest$(EXEEXT) \
-	cipher_list$(EXEEXT) cipherstest$(EXEEXT) clienttest$(EXEEXT) \
+	cipher_list$(EXEEXT) cipherstest$(EXEEXT) cmstest$(EXEEXT) \
 	configtest$(EXEEXT) cts128test$(EXEEXT) destest$(EXEEXT) \
 	dhtest$(EXEEXT) dsatest$(EXEEXT) ecdhtest$(EXEEXT) \
 	ecdsatest$(EXEEXT) ectest$(EXEEXT) enginetest$(EXEEXT) \
@@ -339,10 +339,10 @@ cipherstest_DEPENDENCIES = $(abs_top_builddir)/tls/.libs/libtls.a \
 	$(abs_top_builddir)/ssl/.libs/libssl.a \
 	$(abs_top_builddir)/crypto/.libs/libcrypto.a \
 	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1) $(am__append_1)
-am_clienttest_OBJECTS = clienttest.$(OBJEXT)
-clienttest_OBJECTS = $(am_clienttest_OBJECTS)
-clienttest_LDADD = $(LDADD)
-clienttest_DEPENDENCIES = $(abs_top_builddir)/tls/.libs/libtls.a \
+am_cmstest_OBJECTS = cmstest.$(OBJEXT)
+cmstest_OBJECTS = $(am_cmstest_OBJECTS)
+cmstest_LDADD = $(LDADD)
+cmstest_DEPENDENCIES = $(abs_top_builddir)/tls/.libs/libtls.a \
 	$(abs_top_builddir)/ssl/.libs/libssl.a \
 	$(abs_top_builddir)/crypto/.libs/libcrypto.a \
 	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1) $(am__append_1)
@@ -783,7 +783,7 @@ am__depfiles_remade = ./$(DEPDIR)/aeadtest.Po ./$(DEPDIR)/aes_wrap.Po \
 	./$(DEPDIR)/buffertest-buffertest.Po \
 	./$(DEPDIR)/bytestringtest.Po ./$(DEPDIR)/casttest.Po \
 	./$(DEPDIR)/chachatest.Po ./$(DEPDIR)/cipher_list.Po \
-	./$(DEPDIR)/cipherstest.Po ./$(DEPDIR)/clienttest.Po \
+	./$(DEPDIR)/cipherstest.Po ./$(DEPDIR)/cmstest.Po \
 	./$(DEPDIR)/configtest.Po ./$(DEPDIR)/cts128test.Po \
 	./$(DEPDIR)/destest.Po ./$(DEPDIR)/dhtest.Po \
 	./$(DEPDIR)/dsatest.Po ./$(DEPDIR)/ecdhtest.Po \
@@ -842,7 +842,7 @@ SOURCES = $(aeadtest_SOURCES) $(aes_wrap_SOURCES) \
 	$(bnaddsub_SOURCES) $(bntest_SOURCES) $(buffertest_SOURCES) \
 	$(bytestringtest_SOURCES) $(casttest_SOURCES) \
 	$(chachatest_SOURCES) $(cipher_list_SOURCES) \
-	$(cipherstest_SOURCES) $(clienttest_SOURCES) \
+	$(cipherstest_SOURCES) $(cmstest_SOURCES) \
 	$(configtest_SOURCES) $(cts128test_SOURCES) $(destest_SOURCES) \
 	$(dhtest_SOURCES) $(dsatest_SOURCES) $(ecdhtest_SOURCES) \
 	$(ecdsatest_SOURCES) $(ectest_SOURCES) $(enginetest_SOURCES) \
@@ -873,7 +873,7 @@ DIST_SOURCES = $(aeadtest_SOURCES) $(aes_wrap_SOURCES) \
 	$(bnaddsub_SOURCES) $(bntest_SOURCES) $(buffertest_SOURCES) \
 	$(bytestringtest_SOURCES) $(casttest_SOURCES) \
 	$(chachatest_SOURCES) $(cipher_list_SOURCES) \
-	$(cipherstest_SOURCES) $(clienttest_SOURCES) \
+	$(cipherstest_SOURCES) $(cmstest_SOURCES) \
 	$(configtest_SOURCES) $(cts128test_SOURCES) $(destest_SOURCES) \
 	$(dhtest_SOURCES) $(dsatest_SOURCES) $(ecdhtest_SOURCES) \
 	$(ecdsatest_SOURCES) $(ectest_SOURCES) $(enginetest_SOURCES) \
@@ -1297,7 +1297,7 @@ chachatest_SOURCES = chachatest.c
 cipher_list_SOURCES = cipher_list.c
 noinst_HEADERS = tests.h
 cipherstest_SOURCES = cipherstest.c
-clienttest_SOURCES = clienttest.c
+cmstest_SOURCES = cmstest.c
 configtest_SOURCES = configtest.c
 cts128test_SOURCES = cts128test.c
 destest_SOURCES = destest.c
@@ -1487,9 +1487,9 @@ cipherstest$(EXEEXT): $(cipherstest_OBJECTS) $(cipherstest_DEPENDENCIES) $(EXTRA
 	@rm -f cipherstest$(EXEEXT)
 	$(AM_V_CCLD)$(LINK) $(cipherstest_OBJECTS) $(cipherstest_LDADD) $(LIBS)
 
-clienttest$(EXEEXT): $(clienttest_OBJECTS) $(clienttest_DEPENDENCIES) $(EXTRA_clienttest_DEPENDENCIES) 
-	@rm -f clienttest$(EXEEXT)
-	$(AM_V_CCLD)$(LINK) $(clienttest_OBJECTS) $(clienttest_LDADD) $(LIBS)
+cmstest$(EXEEXT): $(cmstest_OBJECTS) $(cmstest_DEPENDENCIES) $(EXTRA_cmstest_DEPENDENCIES) 
+	@rm -f cmstest$(EXEEXT)
+	$(AM_V_CCLD)$(LINK) $(cmstest_OBJECTS) $(cmstest_LDADD) $(LIBS)
 
 configtest$(EXEEXT): $(configtest_OBJECTS) $(configtest_DEPENDENCIES) $(EXTRA_configtest_DEPENDENCIES) 
 	@rm -f configtest$(EXEEXT)
@@ -1755,7 +1755,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/chachatest.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/cipher_list.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/cipherstest.Po@am__quote@ # am--include-marker
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/clienttest.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/cmstest.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/configtest.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/cts128test.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/destest.Po@am__quote@ # am--include-marker
@@ -2220,9 +2220,9 @@ cipherstest.log: cipherstest$(EXEEXT)
 	--log-file $$b.log --trs-file $$b.trs \
 	$(am__common_driver_flags) $(AM_LOG_DRIVER_FLAGS) $(LOG_DRIVER_FLAGS) -- $(LOG_COMPILE) \
 	"$$tst" $(AM_TESTS_FD_REDIRECT)
-clienttest.log: clienttest$(EXEEXT)
-	@p='clienttest$(EXEEXT)'; \
-	b='clienttest'; \
+cmstest.log: cmstest$(EXEEXT)
+	@p='cmstest$(EXEEXT)'; \
+	b='cmstest'; \
 	$(am__check_pre) $(LOG_DRIVER) --test-name "$$f" \
 	--log-file $$b.log --trs-file $$b.trs \
 	$(am__common_driver_flags) $(AM_LOG_DRIVER_FLAGS) $(LOG_DRIVER_FLAGS) -- $(LOG_COMPILE) \
@@ -2755,7 +2755,7 @@ distclean: distclean-am
 	-rm -f ./$(DEPDIR)/chachatest.Po
 	-rm -f ./$(DEPDIR)/cipher_list.Po
 	-rm -f ./$(DEPDIR)/cipherstest.Po
-	-rm -f ./$(DEPDIR)/clienttest.Po
+	-rm -f ./$(DEPDIR)/cmstest.Po
 	-rm -f ./$(DEPDIR)/configtest.Po
 	-rm -f ./$(DEPDIR)/cts128test.Po
 	-rm -f ./$(DEPDIR)/destest.Po
@@ -2879,7 +2879,7 @@ maintainer-clean: maintainer-clean-am
 	-rm -f ./$(DEPDIR)/chachatest.Po
 	-rm -f ./$(DEPDIR)/cipher_list.Po
 	-rm -f ./$(DEPDIR)/cipherstest.Po
-	-rm -f ./$(DEPDIR)/clienttest.Po
+	-rm -f ./$(DEPDIR)/cmstest.Po
 	-rm -f ./$(DEPDIR)/configtest.Po
 	-rm -f ./$(DEPDIR)/cts128test.Po
 	-rm -f ./$(DEPDIR)/destest.Po

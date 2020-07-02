@@ -134,18 +134,22 @@ am__uninstall_files_from_dir = { \
   }
 am__installdirs = "$(DESTDIR)$(libdir)"
 LTLIBRARIES = $(lib_LTLIBRARIES)
-libssl_la_DEPENDENCIES = $(abs_top_builddir)/crypto/libcrypto.la
+am__DEPENDENCIES_1 =
+libssl_la_DEPENDENCIES = $(abs_top_builddir)/crypto/libcrypto.la \
+	$(am__DEPENDENCIES_1)
 am_libssl_la_OBJECTS = bio_ssl.lo bs_ber.lo bs_cbb.lo bs_cbs.lo \
-	d1_both.lo d1_clnt.lo d1_enc.lo d1_lib.lo d1_pkt.lo d1_srtp.lo \
+	d1_both.lo d1_clnt.lo d1_lib.lo d1_pkt.lo d1_srtp.lo \
 	d1_srvr.lo pqueue.lo s3_cbc.lo s3_lib.lo ssl_algs.lo \
 	ssl_asn1.lo ssl_both.lo ssl_cert.lo ssl_ciph.lo ssl_ciphers.lo \
-	ssl_clnt.lo ssl_err.lo ssl_init.lo ssl_lib.lo ssl_methods.lo \
-	ssl_packet.lo ssl_pkt.lo ssl_rsa.lo ssl_sess.lo ssl_sigalgs.lo \
-	ssl_srvr.lo ssl_stat.lo ssl_tlsext.lo ssl_transcript.lo \
-	ssl_txt.lo ssl_versions.lo t1_enc.lo t1_lib.lo tls13_buffer.lo \
-	tls13_client.lo tls13_handshake.lo tls13_handshake_msg.lo \
-	tls13_key_schedule.lo tls13_lib.lo tls13_record.lo \
-	tls13_record_layer.lo
+	ssl_clnt.lo ssl_err.lo ssl_init.lo ssl_kex.lo ssl_lib.lo \
+	ssl_methods.lo ssl_packet.lo ssl_pkt.lo ssl_rsa.lo ssl_sess.lo \
+	ssl_sigalgs.lo ssl_srvr.lo ssl_stat.lo ssl_tlsext.lo \
+	ssl_transcript.lo ssl_txt.lo ssl_versions.lo t1_enc.lo \
+	t1_lib.lo tls13_buffer.lo tls13_client.lo tls13_error.lo \
+	tls13_handshake.lo tls13_handshake_msg.lo \
+	tls13_key_schedule.lo tls13_key_share.lo tls13_legacy.lo \
+	tls13_lib.lo tls13_record.lo tls13_record_layer.lo \
+	tls13_server.lo
 libssl_la_OBJECTS = $(am_libssl_la_OBJECTS)
 AM_V_lt = $(am__v_lt_@AM_V@)
 am__v_lt_ = $(am__v_lt_@AM_DEFAULT_V@)
@@ -172,15 +176,15 @@ am__maybe_remake_depfiles = depfiles
 am__depfiles_remade = ./$(DEPDIR)/bio_ssl.Plo ./$(DEPDIR)/bs_ber.Plo \
 	./$(DEPDIR)/bs_cbb.Plo ./$(DEPDIR)/bs_cbs.Plo \
 	./$(DEPDIR)/d1_both.Plo ./$(DEPDIR)/d1_clnt.Plo \
-	./$(DEPDIR)/d1_enc.Plo ./$(DEPDIR)/d1_lib.Plo \
-	./$(DEPDIR)/d1_pkt.Plo ./$(DEPDIR)/d1_srtp.Plo \
-	./$(DEPDIR)/d1_srvr.Plo ./$(DEPDIR)/pqueue.Plo \
-	./$(DEPDIR)/s3_cbc.Plo ./$(DEPDIR)/s3_lib.Plo \
-	./$(DEPDIR)/ssl_algs.Plo ./$(DEPDIR)/ssl_asn1.Plo \
-	./$(DEPDIR)/ssl_both.Plo ./$(DEPDIR)/ssl_cert.Plo \
-	./$(DEPDIR)/ssl_ciph.Plo ./$(DEPDIR)/ssl_ciphers.Plo \
-	./$(DEPDIR)/ssl_clnt.Plo ./$(DEPDIR)/ssl_err.Plo \
-	./$(DEPDIR)/ssl_init.Plo ./$(DEPDIR)/ssl_lib.Plo \
+	./$(DEPDIR)/d1_lib.Plo ./$(DEPDIR)/d1_pkt.Plo \
+	./$(DEPDIR)/d1_srtp.Plo ./$(DEPDIR)/d1_srvr.Plo \
+	./$(DEPDIR)/pqueue.Plo ./$(DEPDIR)/s3_cbc.Plo \
+	./$(DEPDIR)/s3_lib.Plo ./$(DEPDIR)/ssl_algs.Plo \
+	./$(DEPDIR)/ssl_asn1.Plo ./$(DEPDIR)/ssl_both.Plo \
+	./$(DEPDIR)/ssl_cert.Plo ./$(DEPDIR)/ssl_ciph.Plo \
+	./$(DEPDIR)/ssl_ciphers.Plo ./$(DEPDIR)/ssl_clnt.Plo \
+	./$(DEPDIR)/ssl_err.Plo ./$(DEPDIR)/ssl_init.Plo \
+	./$(DEPDIR)/ssl_kex.Plo ./$(DEPDIR)/ssl_lib.Plo \
 	./$(DEPDIR)/ssl_methods.Plo ./$(DEPDIR)/ssl_packet.Plo \
 	./$(DEPDIR)/ssl_pkt.Plo ./$(DEPDIR)/ssl_rsa.Plo \
 	./$(DEPDIR)/ssl_sess.Plo ./$(DEPDIR)/ssl_sigalgs.Plo \
@@ -189,11 +193,13 @@ am__depfiles_remade = ./$(DEPDIR)/bio_ssl.Plo ./$(DEPDIR)/bs_ber.Plo \
 	./$(DEPDIR)/ssl_txt.Plo ./$(DEPDIR)/ssl_versions.Plo \
 	./$(DEPDIR)/t1_enc.Plo ./$(DEPDIR)/t1_lib.Plo \
 	./$(DEPDIR)/tls13_buffer.Plo ./$(DEPDIR)/tls13_client.Plo \
-	./$(DEPDIR)/tls13_handshake.Plo \
+	./$(DEPDIR)/tls13_error.Plo ./$(DEPDIR)/tls13_handshake.Plo \
 	./$(DEPDIR)/tls13_handshake_msg.Plo \
-	./$(DEPDIR)/tls13_key_schedule.Plo ./$(DEPDIR)/tls13_lib.Plo \
-	./$(DEPDIR)/tls13_record.Plo \
-	./$(DEPDIR)/tls13_record_layer.Plo
+	./$(DEPDIR)/tls13_key_schedule.Plo \
+	./$(DEPDIR)/tls13_key_share.Plo ./$(DEPDIR)/tls13_legacy.Plo \
+	./$(DEPDIR)/tls13_lib.Plo ./$(DEPDIR)/tls13_record.Plo \
+	./$(DEPDIR)/tls13_record_layer.Plo \
+	./$(DEPDIR)/tls13_server.Plo
 am__mv = mv -f
 COMPILE = $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) \
 	$(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)
@@ -373,17 +379,18 @@ AM_CPPFLAGS = -I$(top_srcdir)/include -I$(top_srcdir)/include/compat \
 lib_LTLIBRARIES = libssl.la
 EXTRA_DIST = VERSION CMakeLists.txt ssl.sym
 libssl_la_LDFLAGS = -version-info @LIBSSL_VERSION@ -no-undefined -export-symbols $(top_srcdir)/ssl/ssl.sym
-libssl_la_LIBADD = $(abs_top_builddir)/crypto/libcrypto.la
+libssl_la_LIBADD = $(abs_top_builddir)/crypto/libcrypto.la $(PLATFORM_LDADD)
 libssl_la_SOURCES = bio_ssl.c bs_ber.c bs_cbb.c bs_cbs.c d1_both.c \
-	d1_clnt.c d1_enc.c d1_lib.c d1_pkt.c d1_srtp.c d1_srvr.c \
-	pqueue.c s3_cbc.c s3_lib.c ssl_algs.c ssl_asn1.c ssl_both.c \
-	ssl_cert.c ssl_ciph.c ssl_ciphers.c ssl_clnt.c ssl_err.c \
-	ssl_init.c ssl_lib.c ssl_methods.c ssl_packet.c ssl_pkt.c \
+	d1_clnt.c d1_lib.c d1_pkt.c d1_srtp.c d1_srvr.c pqueue.c \
+	s3_cbc.c s3_lib.c ssl_algs.c ssl_asn1.c ssl_both.c ssl_cert.c \
+	ssl_ciph.c ssl_ciphers.c ssl_clnt.c ssl_err.c ssl_init.c \
+	ssl_kex.c ssl_lib.c ssl_methods.c ssl_packet.c ssl_pkt.c \
 	ssl_rsa.c ssl_sess.c ssl_sigalgs.c ssl_srvr.c ssl_stat.c \
 	ssl_tlsext.c ssl_transcript.c ssl_txt.c ssl_versions.c \
-	t1_enc.c t1_lib.c tls13_buffer.c tls13_client.c \
+	t1_enc.c t1_lib.c tls13_buffer.c tls13_client.c tls13_error.c \
 	tls13_handshake.c tls13_handshake_msg.c tls13_key_schedule.c \
-	tls13_lib.c tls13_record.c tls13_record_layer.c
+	tls13_key_share.c tls13_legacy.c tls13_lib.c tls13_record.c \
+	tls13_record_layer.c tls13_server.c
 noinst_HEADERS = bytestring.h srtp.h ssl_locl.h ssl_sigalgs.h \
 	ssl_tlsext.h tls13_internal.h tls13_handshake.h tls13_record.h
 all: all-am
@@ -471,7 +478,6 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/bs_cbs.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/d1_both.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/d1_clnt.Plo@am__quote@ # am--include-marker
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/d1_enc.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/d1_lib.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/d1_pkt.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/d1_srtp.Plo@am__quote@ # am--include-marker
@@ -488,6 +494,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/ssl_clnt.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/ssl_err.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/ssl_init.Plo@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/ssl_kex.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/ssl_lib.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/ssl_methods.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/ssl_packet.Plo@am__quote@ # am--include-marker
@@ -505,12 +512,16 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/t1_lib.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/tls13_buffer.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/tls13_client.Plo@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/tls13_error.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/tls13_handshake.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/tls13_handshake_msg.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/tls13_key_schedule.Plo@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/tls13_key_share.Plo@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/tls13_legacy.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/tls13_lib.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/tls13_record.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/tls13_record_layer.Plo@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/tls13_server.Plo@am__quote@ # am--include-marker
 
 $(am__depfiles_remade):
 	@$(MKDIR_P) $(@D)
@@ -682,7 +693,6 @@ distclean: distclean-am
 	-rm -f ./$(DEPDIR)/bs_cbs.Plo
 	-rm -f ./$(DEPDIR)/d1_both.Plo
 	-rm -f ./$(DEPDIR)/d1_clnt.Plo
-	-rm -f ./$(DEPDIR)/d1_enc.Plo
 	-rm -f ./$(DEPDIR)/d1_lib.Plo
 	-rm -f ./$(DEPDIR)/d1_pkt.Plo
 	-rm -f ./$(DEPDIR)/d1_srtp.Plo
@@ -699,6 +709,7 @@ distclean: distclean-am
 	-rm -f ./$(DEPDIR)/ssl_clnt.Plo
 	-rm -f ./$(DEPDIR)/ssl_err.Plo
 	-rm -f ./$(DEPDIR)/ssl_init.Plo
+	-rm -f ./$(DEPDIR)/ssl_kex.Plo
 	-rm -f ./$(DEPDIR)/ssl_lib.Plo
 	-rm -f ./$(DEPDIR)/ssl_methods.Plo
 	-rm -f ./$(DEPDIR)/ssl_packet.Plo
@@ -716,12 +727,16 @@ distclean: distclean-am
 	-rm -f ./$(DEPDIR)/t1_lib.Plo
 	-rm -f ./$(DEPDIR)/tls13_buffer.Plo
 	-rm -f ./$(DEPDIR)/tls13_client.Plo
+	-rm -f ./$(DEPDIR)/tls13_error.Plo
 	-rm -f ./$(DEPDIR)/tls13_handshake.Plo
 	-rm -f ./$(DEPDIR)/tls13_handshake_msg.Plo
 	-rm -f ./$(DEPDIR)/tls13_key_schedule.Plo
+	-rm -f ./$(DEPDIR)/tls13_key_share.Plo
+	-rm -f ./$(DEPDIR)/tls13_legacy.Plo
 	-rm -f ./$(DEPDIR)/tls13_lib.Plo
 	-rm -f ./$(DEPDIR)/tls13_record.Plo
 	-rm -f ./$(DEPDIR)/tls13_record_layer.Plo
+	-rm -f ./$(DEPDIR)/tls13_server.Plo
 	-rm -f Makefile
 distclean-am: clean-am distclean-compile distclean-generic \
 	distclean-tags
@@ -773,7 +788,6 @@ maintainer-clean: maintainer-clean-am
 	-rm -f ./$(DEPDIR)/bs_cbs.Plo
 	-rm -f ./$(DEPDIR)/d1_both.Plo
 	-rm -f ./$(DEPDIR)/d1_clnt.Plo
-	-rm -f ./$(DEPDIR)/d1_enc.Plo
 	-rm -f ./$(DEPDIR)/d1_lib.Plo
 	-rm -f ./$(DEPDIR)/d1_pkt.Plo
 	-rm -f ./$(DEPDIR)/d1_srtp.Plo
@@ -790,6 +804,7 @@ maintainer-clean: maintainer-clean-am
 	-rm -f ./$(DEPDIR)/ssl_clnt.Plo
 	-rm -f ./$(DEPDIR)/ssl_err.Plo
 	-rm -f ./$(DEPDIR)/ssl_init.Plo
+	-rm -f ./$(DEPDIR)/ssl_kex.Plo
 	-rm -f ./$(DEPDIR)/ssl_lib.Plo
 	-rm -f ./$(DEPDIR)/ssl_methods.Plo
 	-rm -f ./$(DEPDIR)/ssl_packet.Plo
@@ -807,12 +822,16 @@ maintainer-clean: maintainer-clean-am
 	-rm -f ./$(DEPDIR)/t1_lib.Plo
 	-rm -f ./$(DEPDIR)/tls13_buffer.Plo
 	-rm -f ./$(DEPDIR)/tls13_client.Plo
+	-rm -f ./$(DEPDIR)/tls13_error.Plo
 	-rm -f ./$(DEPDIR)/tls13_handshake.Plo
 	-rm -f ./$(DEPDIR)/tls13_handshake_msg.Plo
 	-rm -f ./$(DEPDIR)/tls13_key_schedule.Plo
+	-rm -f ./$(DEPDIR)/tls13_key_share.Plo
+	-rm -f ./$(DEPDIR)/tls13_legacy.Plo
 	-rm -f ./$(DEPDIR)/tls13_lib.Plo
 	-rm -f ./$(DEPDIR)/tls13_record.Plo
 	-rm -f ./$(DEPDIR)/tls13_record_layer.Plo
+	-rm -f ./$(DEPDIR)/tls13_server.Plo
 	-rm -f Makefile
 maintainer-clean-am: distclean-am maintainer-clean-generic
 

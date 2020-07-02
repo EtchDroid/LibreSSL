@@ -389,42 +389,46 @@ am__libcrypto_la_SOURCES_DIST = aes/aes-elf-armv4.S \
 	camellia/cmll_misc.c camellia/cmll_ofb.c cast/c_cfb64.c \
 	cast/c_ecb.c cast/c_enc.c cast/c_ofb64.c cast/c_skey.c \
 	chacha/chacha.c cmac/cm_ameth.c cmac/cm_pmeth.c cmac/cmac.c \
-	comp/c_rle.c comp/c_zlib.c comp/comp_err.c comp/comp_lib.c \
-	conf/conf_api.c conf/conf_def.c conf/conf_err.c \
-	conf/conf_lib.c conf/conf_mall.c conf/conf_mod.c \
-	conf/conf_sap.c curve25519/curve25519-generic.c \
-	curve25519/curve25519.c des/cbc_cksm.c des/cbc_enc.c \
-	des/cfb64ede.c des/cfb64enc.c des/cfb_enc.c des/des_enc.c \
-	des/ecb3_enc.c des/ecb_enc.c des/ede_cbcm_enc.c des/enc_read.c \
-	des/enc_writ.c des/fcrypt.c des/fcrypt_b.c des/ofb64ede.c \
-	des/ofb64enc.c des/ofb_enc.c des/pcbc_enc.c des/qud_cksm.c \
-	des/rand_key.c des/set_key.c des/str2key.c des/xcbc_enc.c \
-	dh/dh_ameth.c dh/dh_asn1.c dh/dh_check.c dh/dh_depr.c \
-	dh/dh_err.c dh/dh_gen.c dh/dh_key.c dh/dh_lib.c dh/dh_pmeth.c \
-	dh/dh_prn.c dsa/dsa_ameth.c dsa/dsa_asn1.c dsa/dsa_depr.c \
-	dsa/dsa_err.c dsa/dsa_gen.c dsa/dsa_key.c dsa/dsa_lib.c \
-	dsa/dsa_meth.c dsa/dsa_ossl.c dsa/dsa_pmeth.c dsa/dsa_prn.c \
-	dsa/dsa_sign.c dsa/dsa_vrf.c dso/dso_dlfcn.c dso/dso_err.c \
-	dso/dso_lib.c dso/dso_null.c dso/dso_openssl.c ec/ec2_mult.c \
-	ec/ec2_oct.c ec/ec2_smpl.c ec/ec_ameth.c ec/ec_asn1.c \
-	ec/ec_check.c ec/ec_curve.c ec/ec_cvt.c ec/ec_err.c \
-	ec/ec_key.c ec/ec_kmeth.c ec/ec_lib.c ec/ec_mult.c ec/ec_oct.c \
-	ec/ec_pmeth.c ec/ec_print.c ec/eck_prn.c ec/ecp_mont.c \
-	ec/ecp_nist.c ec/ecp_oct.c ec/ecp_smpl.c ecdh/ecdh_kdf.c \
-	ecdh/ech_err.c ecdh/ech_key.c ecdh/ech_lib.c ecdsa/ecs_asn1.c \
-	ecdsa/ecs_err.c ecdsa/ecs_lib.c ecdsa/ecs_ossl.c \
-	ecdsa/ecs_sign.c ecdsa/ecs_vrf.c engine/eng_all.c \
-	engine/eng_cnf.c engine/eng_ctrl.c engine/eng_dyn.c \
-	engine/eng_err.c engine/eng_fat.c engine/eng_init.c \
-	engine/eng_lib.c engine/eng_list.c engine/eng_openssl.c \
-	engine/eng_pkey.c engine/eng_table.c engine/tb_asnmth.c \
-	engine/tb_cipher.c engine/tb_dh.c engine/tb_digest.c \
-	engine/tb_dsa.c engine/tb_ecdh.c engine/tb_ecdsa.c \
-	engine/tb_eckey.c engine/tb_pkmeth.c engine/tb_rand.c \
-	engine/tb_rsa.c engine/tb_store.c err/err.c err/err_all.c \
-	err/err_prn.c evp/bio_b64.c evp/bio_enc.c evp/bio_md.c \
-	evp/c_all.c evp/digest.c evp/e_aes.c evp/e_aes_cbc_hmac_sha1.c \
-	evp/e_bf.c evp/e_camellia.c evp/e_cast.c evp/e_chacha.c \
+	cms/cms_asn1.c cms/cms_att.c cms/cms_cd.c cms/cms_dd.c \
+	cms/cms_enc.c cms/cms_env.c cms/cms_err.c cms/cms_ess.c \
+	cms/cms_io.c cms/cms_kari.c cms/cms_lib.c cms/cms_pwri.c \
+	cms/cms_sd.c cms/cms_smime.c comp/c_rle.c comp/c_zlib.c \
+	comp/comp_err.c comp/comp_lib.c conf/conf_api.c \
+	conf/conf_def.c conf/conf_err.c conf/conf_lib.c \
+	conf/conf_mall.c conf/conf_mod.c conf/conf_sap.c \
+	curve25519/curve25519-generic.c curve25519/curve25519.c \
+	des/cbc_cksm.c des/cbc_enc.c des/cfb64ede.c des/cfb64enc.c \
+	des/cfb_enc.c des/des_enc.c des/ecb3_enc.c des/ecb_enc.c \
+	des/ede_cbcm_enc.c des/enc_read.c des/enc_writ.c des/fcrypt.c \
+	des/fcrypt_b.c des/ofb64ede.c des/ofb64enc.c des/ofb_enc.c \
+	des/pcbc_enc.c des/qud_cksm.c des/rand_key.c des/set_key.c \
+	des/str2key.c des/xcbc_enc.c dh/dh_ameth.c dh/dh_asn1.c \
+	dh/dh_check.c dh/dh_depr.c dh/dh_err.c dh/dh_gen.c dh/dh_key.c \
+	dh/dh_lib.c dh/dh_pmeth.c dh/dh_prn.c dsa/dsa_ameth.c \
+	dsa/dsa_asn1.c dsa/dsa_depr.c dsa/dsa_err.c dsa/dsa_gen.c \
+	dsa/dsa_key.c dsa/dsa_lib.c dsa/dsa_meth.c dsa/dsa_ossl.c \
+	dsa/dsa_pmeth.c dsa/dsa_prn.c dsa/dsa_sign.c dsa/dsa_vrf.c \
+	dso/dso_dlfcn.c dso/dso_err.c dso/dso_lib.c dso/dso_null.c \
+	dso/dso_openssl.c ec/ec2_mult.c ec/ec2_oct.c ec/ec2_smpl.c \
+	ec/ec_ameth.c ec/ec_asn1.c ec/ec_check.c ec/ec_curve.c \
+	ec/ec_cvt.c ec/ec_err.c ec/ec_key.c ec/ec_kmeth.c ec/ec_lib.c \
+	ec/ec_mult.c ec/ec_oct.c ec/ec_pmeth.c ec/ec_print.c \
+	ec/eck_prn.c ec/ecp_mont.c ec/ecp_nist.c ec/ecp_oct.c \
+	ec/ecp_smpl.c ecdh/ecdh_kdf.c ecdh/ech_err.c ecdh/ech_key.c \
+	ecdh/ech_lib.c ecdsa/ecs_asn1.c ecdsa/ecs_err.c \
+	ecdsa/ecs_lib.c ecdsa/ecs_ossl.c ecdsa/ecs_sign.c \
+	ecdsa/ecs_vrf.c engine/eng_all.c engine/eng_cnf.c \
+	engine/eng_ctrl.c engine/eng_dyn.c engine/eng_err.c \
+	engine/eng_fat.c engine/eng_init.c engine/eng_lib.c \
+	engine/eng_list.c engine/eng_openssl.c engine/eng_pkey.c \
+	engine/eng_table.c engine/tb_asnmth.c engine/tb_cipher.c \
+	engine/tb_dh.c engine/tb_digest.c engine/tb_dsa.c \
+	engine/tb_ecdh.c engine/tb_ecdsa.c engine/tb_eckey.c \
+	engine/tb_pkmeth.c engine/tb_rand.c engine/tb_rsa.c \
+	engine/tb_store.c err/err.c err/err_all.c err/err_prn.c \
+	evp/bio_b64.c evp/bio_enc.c evp/bio_md.c evp/c_all.c \
+	evp/digest.c evp/e_aes.c evp/e_aes_cbc_hmac_sha1.c evp/e_bf.c \
+	evp/e_camellia.c evp/e_cast.c evp/e_chacha.c \
 	evp/e_chacha20poly1305.c evp/e_des.c evp/e_des3.c \
 	evp/e_gost2814789.c evp/e_idea.c evp/e_null.c evp/e_old.c \
 	evp/e_rc2.c evp/e_rc4.c evp/e_rc4_hmac_md5.c evp/e_sm4.c \
@@ -686,6 +690,13 @@ am_libcrypto_la_OBJECTS = $(am__objects_31) $(am__objects_33) \
 	cast/libcrypto_la-c_ofb64.lo cast/libcrypto_la-c_skey.lo \
 	chacha/libcrypto_la-chacha.lo cmac/libcrypto_la-cm_ameth.lo \
 	cmac/libcrypto_la-cm_pmeth.lo cmac/libcrypto_la-cmac.lo \
+	cms/libcrypto_la-cms_asn1.lo cms/libcrypto_la-cms_att.lo \
+	cms/libcrypto_la-cms_cd.lo cms/libcrypto_la-cms_dd.lo \
+	cms/libcrypto_la-cms_enc.lo cms/libcrypto_la-cms_env.lo \
+	cms/libcrypto_la-cms_err.lo cms/libcrypto_la-cms_ess.lo \
+	cms/libcrypto_la-cms_io.lo cms/libcrypto_la-cms_kari.lo \
+	cms/libcrypto_la-cms_lib.lo cms/libcrypto_la-cms_pwri.lo \
+	cms/libcrypto_la-cms_sd.lo cms/libcrypto_la-cms_smime.lo \
 	comp/libcrypto_la-c_rle.lo comp/libcrypto_la-c_zlib.lo \
 	comp/libcrypto_la-comp_err.lo comp/libcrypto_la-comp_lib.lo \
 	conf/libcrypto_la-conf_api.lo conf/libcrypto_la-conf_def.lo \
@@ -1128,6 +1139,20 @@ am__depfiles_remade = ./$(DEPDIR)/libcrypto_la-armcap.Plo \
 	cmac/$(DEPDIR)/libcrypto_la-cm_ameth.Plo \
 	cmac/$(DEPDIR)/libcrypto_la-cm_pmeth.Plo \
 	cmac/$(DEPDIR)/libcrypto_la-cmac.Plo \
+	cms/$(DEPDIR)/libcrypto_la-cms_asn1.Plo \
+	cms/$(DEPDIR)/libcrypto_la-cms_att.Plo \
+	cms/$(DEPDIR)/libcrypto_la-cms_cd.Plo \
+	cms/$(DEPDIR)/libcrypto_la-cms_dd.Plo \
+	cms/$(DEPDIR)/libcrypto_la-cms_enc.Plo \
+	cms/$(DEPDIR)/libcrypto_la-cms_env.Plo \
+	cms/$(DEPDIR)/libcrypto_la-cms_err.Plo \
+	cms/$(DEPDIR)/libcrypto_la-cms_ess.Plo \
+	cms/$(DEPDIR)/libcrypto_la-cms_io.Plo \
+	cms/$(DEPDIR)/libcrypto_la-cms_kari.Plo \
+	cms/$(DEPDIR)/libcrypto_la-cms_lib.Plo \
+	cms/$(DEPDIR)/libcrypto_la-cms_pwri.Plo \
+	cms/$(DEPDIR)/libcrypto_la-cms_sd.Plo \
+	cms/$(DEPDIR)/libcrypto_la-cms_smime.Plo \
 	comp/$(DEPDIR)/libcrypto_la-c_rle.Plo \
 	comp/$(DEPDIR)/libcrypto_la-c_zlib.Plo \
 	comp/$(DEPDIR)/libcrypto_la-comp_err.Plo \
@@ -1783,6 +1808,7 @@ EXTRA_DIST = VERSION CMakeLists.txt crypto.sym compat/strcasecmp.c \
 BUILT_SOURCES = crypto_portable.sym
 CLEANFILES = crypto_portable.sym
 libcrypto_la_LDFLAGS = -version-info @LIBCRYPTO_VERSION@ -no-undefined -export-symbols crypto_portable.sym
+EXTRA_libcrypto_la_DEPENDENCIES = crypto_portable.sym
 libcrypto_la_LIBADD = libcompat.la $(am__append_1)
 libcrypto_la_CPPFLAGS = $(AM_CPPFLAGS) -DLIBRESSL_INTERNAL \
 	-DOPENSSL_NO_HW_PADLOCK $(am__append_2) $(am__append_3) \
@@ -1816,11 +1842,11 @@ noinst_HEADERS = compat/arc4random.h compat/arc4random_aix.h \
 	x86_arch.h aes/aes_locl.h asn1/asn1_locl.h asn1/charmap.h \
 	bf/bf_locl.h bf/bf_pi.h bn/bn_lcl.h bn/bn_prime.h \
 	camellia/camellia.h camellia/cmll_locl.h cast/cast_lcl.h \
-	cast/cast_s.h conf/conf_def.h curve25519/curve25519_internal.h \
-	des/des_locl.h des/spr.h dsa/dsa_locl.h ec/ec_lcl.h \
-	ecdh/ech_locl.h ecdsa/ecs_locl.h engine/eng_int.h \
-	evp/evp_locl.h gost/gost.h gost/gost_asn1.h gost/gost_locl.h \
-	idea/idea_lcl.h md4/md4_locl.h md5/md5_locl.h \
+	cast/cast_s.h cms/cms_lcl.h conf/conf_def.h \
+	curve25519/curve25519_internal.h des/des_locl.h des/spr.h \
+	dsa/dsa_locl.h ec/ec_lcl.h ecdh/ech_locl.h ecdsa/ecs_locl.h \
+	engine/eng_int.h evp/evp_locl.h gost/gost_asn1.h \
+	gost/gost_locl.h idea/idea_lcl.h md4/md4_locl.h md5/md5_locl.h \
 	modes/modes_lcl.h objects/obj_dat.h objects/obj_xref.h \
 	rc2/rc2_locl.h rc4/rc4_locl.h ripemd/rmd_locl.h \
 	ripemd/rmdconst.h rsa/rsa_locl.h sha/sha_locl.h sm3/sm3_locl.h \
@@ -1844,6 +1870,8 @@ noinst_HEADERS = compat/arc4random.h compat/arc4random_aix.h \
 # cast
 
 # cmac
+
+# cms
 
 # comp
 
@@ -1968,10 +1996,13 @@ libcrypto_la_SOURCES = $(am__append_36) $(am__append_38) \
 	camellia/cmll_ecb.c camellia/cmll_misc.c camellia/cmll_ofb.c \
 	cast/c_cfb64.c cast/c_ecb.c cast/c_enc.c cast/c_ofb64.c \
 	cast/c_skey.c chacha/chacha.c cmac/cm_ameth.c cmac/cm_pmeth.c \
-	cmac/cmac.c comp/c_rle.c comp/c_zlib.c comp/comp_err.c \
-	comp/comp_lib.c conf/conf_api.c conf/conf_def.c \
-	conf/conf_err.c conf/conf_lib.c conf/conf_mall.c \
-	conf/conf_mod.c conf/conf_sap.c \
+	cmac/cmac.c cms/cms_asn1.c cms/cms_att.c cms/cms_cd.c \
+	cms/cms_dd.c cms/cms_enc.c cms/cms_env.c cms/cms_err.c \
+	cms/cms_ess.c cms/cms_io.c cms/cms_kari.c cms/cms_lib.c \
+	cms/cms_pwri.c cms/cms_sd.c cms/cms_smime.c comp/c_rle.c \
+	comp/c_zlib.c comp/comp_err.c comp/comp_lib.c conf/conf_api.c \
+	conf/conf_def.c conf/conf_err.c conf/conf_lib.c \
+	conf/conf_mall.c conf/conf_mod.c conf/conf_sap.c \
 	curve25519/curve25519-generic.c curve25519/curve25519.c \
 	des/cbc_cksm.c des/cbc_enc.c des/cfb64ede.c des/cfb64enc.c \
 	des/cfb_enc.c des/des_enc.c des/ecb3_enc.c des/ecb_enc.c \
@@ -2845,6 +2876,40 @@ cmac/libcrypto_la-cm_pmeth.lo: cmac/$(am__dirstamp) \
 	cmac/$(DEPDIR)/$(am__dirstamp)
 cmac/libcrypto_la-cmac.lo: cmac/$(am__dirstamp) \
 	cmac/$(DEPDIR)/$(am__dirstamp)
+cms/$(am__dirstamp):
+	@$(MKDIR_P) cms
+	@: > cms/$(am__dirstamp)
+cms/$(DEPDIR)/$(am__dirstamp):
+	@$(MKDIR_P) cms/$(DEPDIR)
+	@: > cms/$(DEPDIR)/$(am__dirstamp)
+cms/libcrypto_la-cms_asn1.lo: cms/$(am__dirstamp) \
+	cms/$(DEPDIR)/$(am__dirstamp)
+cms/libcrypto_la-cms_att.lo: cms/$(am__dirstamp) \
+	cms/$(DEPDIR)/$(am__dirstamp)
+cms/libcrypto_la-cms_cd.lo: cms/$(am__dirstamp) \
+	cms/$(DEPDIR)/$(am__dirstamp)
+cms/libcrypto_la-cms_dd.lo: cms/$(am__dirstamp) \
+	cms/$(DEPDIR)/$(am__dirstamp)
+cms/libcrypto_la-cms_enc.lo: cms/$(am__dirstamp) \
+	cms/$(DEPDIR)/$(am__dirstamp)
+cms/libcrypto_la-cms_env.lo: cms/$(am__dirstamp) \
+	cms/$(DEPDIR)/$(am__dirstamp)
+cms/libcrypto_la-cms_err.lo: cms/$(am__dirstamp) \
+	cms/$(DEPDIR)/$(am__dirstamp)
+cms/libcrypto_la-cms_ess.lo: cms/$(am__dirstamp) \
+	cms/$(DEPDIR)/$(am__dirstamp)
+cms/libcrypto_la-cms_io.lo: cms/$(am__dirstamp) \
+	cms/$(DEPDIR)/$(am__dirstamp)
+cms/libcrypto_la-cms_kari.lo: cms/$(am__dirstamp) \
+	cms/$(DEPDIR)/$(am__dirstamp)
+cms/libcrypto_la-cms_lib.lo: cms/$(am__dirstamp) \
+	cms/$(DEPDIR)/$(am__dirstamp)
+cms/libcrypto_la-cms_pwri.lo: cms/$(am__dirstamp) \
+	cms/$(DEPDIR)/$(am__dirstamp)
+cms/libcrypto_la-cms_sd.lo: cms/$(am__dirstamp) \
+	cms/$(DEPDIR)/$(am__dirstamp)
+cms/libcrypto_la-cms_smime.lo: cms/$(am__dirstamp) \
+	cms/$(DEPDIR)/$(am__dirstamp)
 comp/$(am__dirstamp):
 	@$(MKDIR_P) comp
 	@: > comp/$(am__dirstamp)
@@ -3860,6 +3925,8 @@ mostlyclean-compile:
 	-rm -f chacha/*.lo
 	-rm -f cmac/*.$(OBJEXT)
 	-rm -f cmac/*.lo
+	-rm -f cms/*.$(OBJEXT)
+	-rm -f cms/*.lo
 	-rm -f comp/*.$(OBJEXT)
 	-rm -f comp/*.lo
 	-rm -f compat/*.$(OBJEXT)
@@ -4165,6 +4232,20 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@cmac/$(DEPDIR)/libcrypto_la-cm_ameth.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@cmac/$(DEPDIR)/libcrypto_la-cm_pmeth.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@cmac/$(DEPDIR)/libcrypto_la-cmac.Plo@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@cms/$(DEPDIR)/libcrypto_la-cms_asn1.Plo@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@cms/$(DEPDIR)/libcrypto_la-cms_att.Plo@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@cms/$(DEPDIR)/libcrypto_la-cms_cd.Plo@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@cms/$(DEPDIR)/libcrypto_la-cms_dd.Plo@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@cms/$(DEPDIR)/libcrypto_la-cms_enc.Plo@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@cms/$(DEPDIR)/libcrypto_la-cms_env.Plo@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@cms/$(DEPDIR)/libcrypto_la-cms_err.Plo@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@cms/$(DEPDIR)/libcrypto_la-cms_ess.Plo@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@cms/$(DEPDIR)/libcrypto_la-cms_io.Plo@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@cms/$(DEPDIR)/libcrypto_la-cms_kari.Plo@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@cms/$(DEPDIR)/libcrypto_la-cms_lib.Plo@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@cms/$(DEPDIR)/libcrypto_la-cms_pwri.Plo@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@cms/$(DEPDIR)/libcrypto_la-cms_sd.Plo@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@cms/$(DEPDIR)/libcrypto_la-cms_smime.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@comp/$(DEPDIR)/libcrypto_la-c_rle.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@comp/$(DEPDIR)/libcrypto_la-c_zlib.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@comp/$(DEPDIR)/libcrypto_la-comp_err.Plo@am__quote@ # am--include-marker
@@ -6463,6 +6544,104 @@ cmac/libcrypto_la-cmac.lo: cmac/cmac.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='cmac/cmac.c' object='cmac/libcrypto_la-cmac.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libcrypto_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o cmac/libcrypto_la-cmac.lo `test -f 'cmac/cmac.c' || echo '$(srcdir)/'`cmac/cmac.c
+
+cms/libcrypto_la-cms_asn1.lo: cms/cms_asn1.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libcrypto_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT cms/libcrypto_la-cms_asn1.lo -MD -MP -MF cms/$(DEPDIR)/libcrypto_la-cms_asn1.Tpo -c -o cms/libcrypto_la-cms_asn1.lo `test -f 'cms/cms_asn1.c' || echo '$(srcdir)/'`cms/cms_asn1.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) cms/$(DEPDIR)/libcrypto_la-cms_asn1.Tpo cms/$(DEPDIR)/libcrypto_la-cms_asn1.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='cms/cms_asn1.c' object='cms/libcrypto_la-cms_asn1.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libcrypto_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o cms/libcrypto_la-cms_asn1.lo `test -f 'cms/cms_asn1.c' || echo '$(srcdir)/'`cms/cms_asn1.c
+
+cms/libcrypto_la-cms_att.lo: cms/cms_att.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libcrypto_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT cms/libcrypto_la-cms_att.lo -MD -MP -MF cms/$(DEPDIR)/libcrypto_la-cms_att.Tpo -c -o cms/libcrypto_la-cms_att.lo `test -f 'cms/cms_att.c' || echo '$(srcdir)/'`cms/cms_att.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) cms/$(DEPDIR)/libcrypto_la-cms_att.Tpo cms/$(DEPDIR)/libcrypto_la-cms_att.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='cms/cms_att.c' object='cms/libcrypto_la-cms_att.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libcrypto_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o cms/libcrypto_la-cms_att.lo `test -f 'cms/cms_att.c' || echo '$(srcdir)/'`cms/cms_att.c
+
+cms/libcrypto_la-cms_cd.lo: cms/cms_cd.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libcrypto_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT cms/libcrypto_la-cms_cd.lo -MD -MP -MF cms/$(DEPDIR)/libcrypto_la-cms_cd.Tpo -c -o cms/libcrypto_la-cms_cd.lo `test -f 'cms/cms_cd.c' || echo '$(srcdir)/'`cms/cms_cd.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) cms/$(DEPDIR)/libcrypto_la-cms_cd.Tpo cms/$(DEPDIR)/libcrypto_la-cms_cd.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='cms/cms_cd.c' object='cms/libcrypto_la-cms_cd.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libcrypto_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o cms/libcrypto_la-cms_cd.lo `test -f 'cms/cms_cd.c' || echo '$(srcdir)/'`cms/cms_cd.c
+
+cms/libcrypto_la-cms_dd.lo: cms/cms_dd.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libcrypto_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT cms/libcrypto_la-cms_dd.lo -MD -MP -MF cms/$(DEPDIR)/libcrypto_la-cms_dd.Tpo -c -o cms/libcrypto_la-cms_dd.lo `test -f 'cms/cms_dd.c' || echo '$(srcdir)/'`cms/cms_dd.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) cms/$(DEPDIR)/libcrypto_la-cms_dd.Tpo cms/$(DEPDIR)/libcrypto_la-cms_dd.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='cms/cms_dd.c' object='cms/libcrypto_la-cms_dd.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libcrypto_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o cms/libcrypto_la-cms_dd.lo `test -f 'cms/cms_dd.c' || echo '$(srcdir)/'`cms/cms_dd.c
+
+cms/libcrypto_la-cms_enc.lo: cms/cms_enc.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libcrypto_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT cms/libcrypto_la-cms_enc.lo -MD -MP -MF cms/$(DEPDIR)/libcrypto_la-cms_enc.Tpo -c -o cms/libcrypto_la-cms_enc.lo `test -f 'cms/cms_enc.c' || echo '$(srcdir)/'`cms/cms_enc.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) cms/$(DEPDIR)/libcrypto_la-cms_enc.Tpo cms/$(DEPDIR)/libcrypto_la-cms_enc.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='cms/cms_enc.c' object='cms/libcrypto_la-cms_enc.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libcrypto_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o cms/libcrypto_la-cms_enc.lo `test -f 'cms/cms_enc.c' || echo '$(srcdir)/'`cms/cms_enc.c
+
+cms/libcrypto_la-cms_env.lo: cms/cms_env.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libcrypto_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT cms/libcrypto_la-cms_env.lo -MD -MP -MF cms/$(DEPDIR)/libcrypto_la-cms_env.Tpo -c -o cms/libcrypto_la-cms_env.lo `test -f 'cms/cms_env.c' || echo '$(srcdir)/'`cms/cms_env.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) cms/$(DEPDIR)/libcrypto_la-cms_env.Tpo cms/$(DEPDIR)/libcrypto_la-cms_env.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='cms/cms_env.c' object='cms/libcrypto_la-cms_env.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libcrypto_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o cms/libcrypto_la-cms_env.lo `test -f 'cms/cms_env.c' || echo '$(srcdir)/'`cms/cms_env.c
+
+cms/libcrypto_la-cms_err.lo: cms/cms_err.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libcrypto_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT cms/libcrypto_la-cms_err.lo -MD -MP -MF cms/$(DEPDIR)/libcrypto_la-cms_err.Tpo -c -o cms/libcrypto_la-cms_err.lo `test -f 'cms/cms_err.c' || echo '$(srcdir)/'`cms/cms_err.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) cms/$(DEPDIR)/libcrypto_la-cms_err.Tpo cms/$(DEPDIR)/libcrypto_la-cms_err.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='cms/cms_err.c' object='cms/libcrypto_la-cms_err.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libcrypto_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o cms/libcrypto_la-cms_err.lo `test -f 'cms/cms_err.c' || echo '$(srcdir)/'`cms/cms_err.c
+
+cms/libcrypto_la-cms_ess.lo: cms/cms_ess.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libcrypto_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT cms/libcrypto_la-cms_ess.lo -MD -MP -MF cms/$(DEPDIR)/libcrypto_la-cms_ess.Tpo -c -o cms/libcrypto_la-cms_ess.lo `test -f 'cms/cms_ess.c' || echo '$(srcdir)/'`cms/cms_ess.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) cms/$(DEPDIR)/libcrypto_la-cms_ess.Tpo cms/$(DEPDIR)/libcrypto_la-cms_ess.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='cms/cms_ess.c' object='cms/libcrypto_la-cms_ess.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libcrypto_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o cms/libcrypto_la-cms_ess.lo `test -f 'cms/cms_ess.c' || echo '$(srcdir)/'`cms/cms_ess.c
+
+cms/libcrypto_la-cms_io.lo: cms/cms_io.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libcrypto_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT cms/libcrypto_la-cms_io.lo -MD -MP -MF cms/$(DEPDIR)/libcrypto_la-cms_io.Tpo -c -o cms/libcrypto_la-cms_io.lo `test -f 'cms/cms_io.c' || echo '$(srcdir)/'`cms/cms_io.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) cms/$(DEPDIR)/libcrypto_la-cms_io.Tpo cms/$(DEPDIR)/libcrypto_la-cms_io.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='cms/cms_io.c' object='cms/libcrypto_la-cms_io.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libcrypto_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o cms/libcrypto_la-cms_io.lo `test -f 'cms/cms_io.c' || echo '$(srcdir)/'`cms/cms_io.c
+
+cms/libcrypto_la-cms_kari.lo: cms/cms_kari.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libcrypto_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT cms/libcrypto_la-cms_kari.lo -MD -MP -MF cms/$(DEPDIR)/libcrypto_la-cms_kari.Tpo -c -o cms/libcrypto_la-cms_kari.lo `test -f 'cms/cms_kari.c' || echo '$(srcdir)/'`cms/cms_kari.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) cms/$(DEPDIR)/libcrypto_la-cms_kari.Tpo cms/$(DEPDIR)/libcrypto_la-cms_kari.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='cms/cms_kari.c' object='cms/libcrypto_la-cms_kari.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libcrypto_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o cms/libcrypto_la-cms_kari.lo `test -f 'cms/cms_kari.c' || echo '$(srcdir)/'`cms/cms_kari.c
+
+cms/libcrypto_la-cms_lib.lo: cms/cms_lib.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libcrypto_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT cms/libcrypto_la-cms_lib.lo -MD -MP -MF cms/$(DEPDIR)/libcrypto_la-cms_lib.Tpo -c -o cms/libcrypto_la-cms_lib.lo `test -f 'cms/cms_lib.c' || echo '$(srcdir)/'`cms/cms_lib.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) cms/$(DEPDIR)/libcrypto_la-cms_lib.Tpo cms/$(DEPDIR)/libcrypto_la-cms_lib.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='cms/cms_lib.c' object='cms/libcrypto_la-cms_lib.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libcrypto_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o cms/libcrypto_la-cms_lib.lo `test -f 'cms/cms_lib.c' || echo '$(srcdir)/'`cms/cms_lib.c
+
+cms/libcrypto_la-cms_pwri.lo: cms/cms_pwri.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libcrypto_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT cms/libcrypto_la-cms_pwri.lo -MD -MP -MF cms/$(DEPDIR)/libcrypto_la-cms_pwri.Tpo -c -o cms/libcrypto_la-cms_pwri.lo `test -f 'cms/cms_pwri.c' || echo '$(srcdir)/'`cms/cms_pwri.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) cms/$(DEPDIR)/libcrypto_la-cms_pwri.Tpo cms/$(DEPDIR)/libcrypto_la-cms_pwri.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='cms/cms_pwri.c' object='cms/libcrypto_la-cms_pwri.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libcrypto_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o cms/libcrypto_la-cms_pwri.lo `test -f 'cms/cms_pwri.c' || echo '$(srcdir)/'`cms/cms_pwri.c
+
+cms/libcrypto_la-cms_sd.lo: cms/cms_sd.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libcrypto_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT cms/libcrypto_la-cms_sd.lo -MD -MP -MF cms/$(DEPDIR)/libcrypto_la-cms_sd.Tpo -c -o cms/libcrypto_la-cms_sd.lo `test -f 'cms/cms_sd.c' || echo '$(srcdir)/'`cms/cms_sd.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) cms/$(DEPDIR)/libcrypto_la-cms_sd.Tpo cms/$(DEPDIR)/libcrypto_la-cms_sd.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='cms/cms_sd.c' object='cms/libcrypto_la-cms_sd.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libcrypto_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o cms/libcrypto_la-cms_sd.lo `test -f 'cms/cms_sd.c' || echo '$(srcdir)/'`cms/cms_sd.c
+
+cms/libcrypto_la-cms_smime.lo: cms/cms_smime.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libcrypto_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT cms/libcrypto_la-cms_smime.lo -MD -MP -MF cms/$(DEPDIR)/libcrypto_la-cms_smime.Tpo -c -o cms/libcrypto_la-cms_smime.lo `test -f 'cms/cms_smime.c' || echo '$(srcdir)/'`cms/cms_smime.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) cms/$(DEPDIR)/libcrypto_la-cms_smime.Tpo cms/$(DEPDIR)/libcrypto_la-cms_smime.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='cms/cms_smime.c' object='cms/libcrypto_la-cms_smime.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libcrypto_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o cms/libcrypto_la-cms_smime.lo `test -f 'cms/cms_smime.c' || echo '$(srcdir)/'`cms/cms_smime.c
 
 comp/libcrypto_la-c_rle.lo: comp/c_rle.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libcrypto_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT comp/libcrypto_la-c_rle.lo -MD -MP -MF comp/$(DEPDIR)/libcrypto_la-c_rle.Tpo -c -o comp/libcrypto_la-c_rle.lo `test -f 'comp/c_rle.c' || echo '$(srcdir)/'`comp/c_rle.c
@@ -9160,6 +9339,7 @@ clean-libtool:
 	-rm -rf cast/.libs cast/_libs
 	-rm -rf chacha/.libs chacha/_libs
 	-rm -rf cmac/.libs cmac/_libs
+	-rm -rf cms/.libs cms/_libs
 	-rm -rf comp/.libs comp/_libs
 	-rm -rf compat/.libs compat/_libs
 	-rm -rf conf/.libs conf/_libs
@@ -9345,6 +9525,8 @@ distclean-generic:
 	-rm -f chacha/$(am__dirstamp)
 	-rm -f cmac/$(DEPDIR)/$(am__dirstamp)
 	-rm -f cmac/$(am__dirstamp)
+	-rm -f cms/$(DEPDIR)/$(am__dirstamp)
+	-rm -f cms/$(am__dirstamp)
 	-rm -f comp/$(DEPDIR)/$(am__dirstamp)
 	-rm -f comp/$(am__dirstamp)
 	-rm -f compat/$(DEPDIR)/$(am__dirstamp)
@@ -9657,6 +9839,20 @@ distclean: distclean-am
 	-rm -f cmac/$(DEPDIR)/libcrypto_la-cm_ameth.Plo
 	-rm -f cmac/$(DEPDIR)/libcrypto_la-cm_pmeth.Plo
 	-rm -f cmac/$(DEPDIR)/libcrypto_la-cmac.Plo
+	-rm -f cms/$(DEPDIR)/libcrypto_la-cms_asn1.Plo
+	-rm -f cms/$(DEPDIR)/libcrypto_la-cms_att.Plo
+	-rm -f cms/$(DEPDIR)/libcrypto_la-cms_cd.Plo
+	-rm -f cms/$(DEPDIR)/libcrypto_la-cms_dd.Plo
+	-rm -f cms/$(DEPDIR)/libcrypto_la-cms_enc.Plo
+	-rm -f cms/$(DEPDIR)/libcrypto_la-cms_env.Plo
+	-rm -f cms/$(DEPDIR)/libcrypto_la-cms_err.Plo
+	-rm -f cms/$(DEPDIR)/libcrypto_la-cms_ess.Plo
+	-rm -f cms/$(DEPDIR)/libcrypto_la-cms_io.Plo
+	-rm -f cms/$(DEPDIR)/libcrypto_la-cms_kari.Plo
+	-rm -f cms/$(DEPDIR)/libcrypto_la-cms_lib.Plo
+	-rm -f cms/$(DEPDIR)/libcrypto_la-cms_pwri.Plo
+	-rm -f cms/$(DEPDIR)/libcrypto_la-cms_sd.Plo
+	-rm -f cms/$(DEPDIR)/libcrypto_la-cms_smime.Plo
 	-rm -f comp/$(DEPDIR)/libcrypto_la-c_rle.Plo
 	-rm -f comp/$(DEPDIR)/libcrypto_la-c_zlib.Plo
 	-rm -f comp/$(DEPDIR)/libcrypto_la-comp_err.Plo
@@ -10369,6 +10565,20 @@ maintainer-clean: maintainer-clean-am
 	-rm -f cmac/$(DEPDIR)/libcrypto_la-cm_ameth.Plo
 	-rm -f cmac/$(DEPDIR)/libcrypto_la-cm_pmeth.Plo
 	-rm -f cmac/$(DEPDIR)/libcrypto_la-cmac.Plo
+	-rm -f cms/$(DEPDIR)/libcrypto_la-cms_asn1.Plo
+	-rm -f cms/$(DEPDIR)/libcrypto_la-cms_att.Plo
+	-rm -f cms/$(DEPDIR)/libcrypto_la-cms_cd.Plo
+	-rm -f cms/$(DEPDIR)/libcrypto_la-cms_dd.Plo
+	-rm -f cms/$(DEPDIR)/libcrypto_la-cms_enc.Plo
+	-rm -f cms/$(DEPDIR)/libcrypto_la-cms_env.Plo
+	-rm -f cms/$(DEPDIR)/libcrypto_la-cms_err.Plo
+	-rm -f cms/$(DEPDIR)/libcrypto_la-cms_ess.Plo
+	-rm -f cms/$(DEPDIR)/libcrypto_la-cms_io.Plo
+	-rm -f cms/$(DEPDIR)/libcrypto_la-cms_kari.Plo
+	-rm -f cms/$(DEPDIR)/libcrypto_la-cms_lib.Plo
+	-rm -f cms/$(DEPDIR)/libcrypto_la-cms_pwri.Plo
+	-rm -f cms/$(DEPDIR)/libcrypto_la-cms_sd.Plo
+	-rm -f cms/$(DEPDIR)/libcrypto_la-cms_smime.Plo
 	-rm -f comp/$(DEPDIR)/libcrypto_la-c_rle.Plo
 	-rm -f comp/$(DEPDIR)/libcrypto_la-c_zlib.Plo
 	-rm -f comp/$(DEPDIR)/libcrypto_la-comp_err.Plo
@@ -10859,7 +11069,7 @@ uninstall-am: uninstall-libLTLIBRARIES
 .PRECIOUS: Makefile
 
 
-crypto_portable.sym:
+crypto_portable.sym: crypto.sym  Makefile
 	-echo "generating crypto_portable.sym ..."
 	-cp $(top_srcdir)/crypto/crypto.sym crypto_portable.sym
 	-chmod u+w crypto_portable.sym

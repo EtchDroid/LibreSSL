@@ -21,7 +21,7 @@ EXTRA_DIST += compat/strcasecmp.c
 BUILT_SOURCES = crypto_portable.sym
 CLEANFILES = crypto_portable.sym
 
-crypto_portable.sym:
+crypto_portable.sym: crypto.sym  Makefile
 	-echo "generating crypto_portable.sym ..."
 	-cp $(top_srcdir)/crypto/crypto.sym crypto_portable.sym
 	-chmod u+w crypto_portable.sym
@@ -94,6 +94,7 @@ if HOST_WIN
 endif
 
 libcrypto_la_LDFLAGS = -version-info @LIBCRYPTO_VERSION@ -no-undefined -export-symbols crypto_portable.sym
+EXTRA_libcrypto_la_DEPENDENCIES = crypto_portable.sym
 libcrypto_la_LIBADD = libcompat.la
 if !HAVE_EXPLICIT_BZERO
 libcrypto_la_LIBADD += libcompatnoopt.la
@@ -447,6 +448,23 @@ libcrypto_la_SOURCES += cmac/cm_ameth.c
 libcrypto_la_SOURCES += cmac/cm_pmeth.c
 libcrypto_la_SOURCES += cmac/cmac.c
 
+# cms
+libcrypto_la_SOURCES += cms/cms_asn1.c
+libcrypto_la_SOURCES += cms/cms_att.c
+libcrypto_la_SOURCES += cms/cms_cd.c
+libcrypto_la_SOURCES += cms/cms_dd.c
+libcrypto_la_SOURCES += cms/cms_enc.c
+libcrypto_la_SOURCES += cms/cms_env.c
+libcrypto_la_SOURCES += cms/cms_err.c
+libcrypto_la_SOURCES += cms/cms_ess.c
+libcrypto_la_SOURCES += cms/cms_io.c
+libcrypto_la_SOURCES += cms/cms_kari.c
+libcrypto_la_SOURCES += cms/cms_lib.c
+libcrypto_la_SOURCES += cms/cms_pwri.c
+libcrypto_la_SOURCES += cms/cms_sd.c
+libcrypto_la_SOURCES += cms/cms_smime.c
+noinst_HEADERS += cms/cms_lcl.h
+
 # comp
 libcrypto_la_SOURCES += comp/c_rle.c
 libcrypto_la_SOURCES += comp/c_zlib.c
@@ -680,7 +698,6 @@ libcrypto_la_SOURCES += gost/gostr341001_params.c
 libcrypto_la_SOURCES += gost/gostr341001_pmeth.c
 libcrypto_la_SOURCES += gost/gostr341194.c
 libcrypto_la_SOURCES += gost/streebog.c
-noinst_HEADERS += gost/gost.h
 noinst_HEADERS += gost/gost_asn1.h
 noinst_HEADERS += gost/gost_locl.h
 

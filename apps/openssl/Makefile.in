@@ -116,13 +116,13 @@ CONFIG_CLEAN_VPATH_FILES =
 am__installdirs = "$(DESTDIR)$(bindir)" "$(DESTDIR)$(man1dir)"
 PROGRAMS = $(bin_PROGRAMS)
 am__openssl_SOURCES_DIST = apps.c asn1pars.c ca.c ciphers.c crl.c \
-	crl2p7.c dgst.c dh.c dhparam.c dsa.c dsaparam.c ec.c ecparam.c \
-	enc.c errstr.c gendh.c gendsa.c genpkey.c genrsa.c nseq.c \
-	ocsp.c openssl.c passwd.c pkcs12.c pkcs7.c pkcs8.c pkey.c \
-	pkeyparam.c pkeyutl.c prime.c rand.c req.c rsa.c rsautl.c \
-	s_cb.c s_client.c s_server.c s_socket.c s_time.c sess_id.c \
-	smime.c speed.c spkac.c ts.c verify.c version.c x509.c \
-	certhash.c certhash_win.c apps_win.c apps_posix.c \
+	crl2p7.c cms.c dgst.c dh.c dhparam.c dsa.c dsaparam.c ec.c \
+	ecparam.c enc.c errstr.c gendh.c gendsa.c genpkey.c genrsa.c \
+	nseq.c ocsp.c openssl.c passwd.c pkcs12.c pkcs7.c pkcs8.c \
+	pkey.c pkeyparam.c pkeyutl.c prime.c rand.c req.c rsa.c \
+	rsautl.c s_cb.c s_client.c s_server.c s_socket.c s_time.c \
+	sess_id.c smime.c speed.c spkac.c ts.c verify.c version.c \
+	x509.c certhash.c certhash_win.c apps_win.c apps_posix.c \
 	compat/poll_win.c compat/clock_gettime_osx.c compat/strtonum.c
 @BUILD_CERTHASH_TRUE@am__objects_1 = certhash.$(OBJEXT)
 @BUILD_CERTHASH_FALSE@am__objects_2 = certhash_win.$(OBJEXT)
@@ -134,7 +134,7 @@ am__dirstamp = $(am__leading_dot)dirstamp
 @HAVE_CLOCK_GETTIME_FALSE@@HOST_DARWIN_TRUE@am__objects_6 = compat/clock_gettime_osx.$(OBJEXT)
 @HAVE_STRTONUM_FALSE@am__objects_7 = compat/strtonum.$(OBJEXT)
 am_openssl_OBJECTS = apps.$(OBJEXT) asn1pars.$(OBJEXT) ca.$(OBJEXT) \
-	ciphers.$(OBJEXT) crl.$(OBJEXT) crl2p7.$(OBJEXT) \
+	ciphers.$(OBJEXT) crl.$(OBJEXT) crl2p7.$(OBJEXT) cms.$(OBJEXT) \
 	dgst.$(OBJEXT) dh.$(OBJEXT) dhparam.$(OBJEXT) dsa.$(OBJEXT) \
 	dsaparam.$(OBJEXT) ec.$(OBJEXT) ecparam.$(OBJEXT) \
 	enc.$(OBJEXT) errstr.$(OBJEXT) gendh.$(OBJEXT) \
@@ -178,9 +178,9 @@ am__depfiles_remade = ./$(DEPDIR)/apps.Po ./$(DEPDIR)/apps_posix.Po \
 	./$(DEPDIR)/apps_win.Po ./$(DEPDIR)/asn1pars.Po \
 	./$(DEPDIR)/ca.Po ./$(DEPDIR)/certhash.Po \
 	./$(DEPDIR)/certhash_win.Po ./$(DEPDIR)/ciphers.Po \
-	./$(DEPDIR)/crl.Po ./$(DEPDIR)/crl2p7.Po ./$(DEPDIR)/dgst.Po \
-	./$(DEPDIR)/dh.Po ./$(DEPDIR)/dhparam.Po ./$(DEPDIR)/dsa.Po \
-	./$(DEPDIR)/dsaparam.Po ./$(DEPDIR)/ec.Po \
+	./$(DEPDIR)/cms.Po ./$(DEPDIR)/crl.Po ./$(DEPDIR)/crl2p7.Po \
+	./$(DEPDIR)/dgst.Po ./$(DEPDIR)/dh.Po ./$(DEPDIR)/dhparam.Po \
+	./$(DEPDIR)/dsa.Po ./$(DEPDIR)/dsaparam.Po ./$(DEPDIR)/ec.Po \
 	./$(DEPDIR)/ecparam.Po ./$(DEPDIR)/enc.Po \
 	./$(DEPDIR)/errstr.Po ./$(DEPDIR)/gendh.Po \
 	./$(DEPDIR)/gendsa.Po ./$(DEPDIR)/genpkey.Po \
@@ -409,14 +409,15 @@ openssl_LDADD = $(abs_top_builddir)/ssl/libssl.la \
 	$(abs_top_builddir)/crypto/libcrypto.la $(PLATFORM_LDADD) \
 	$(PROG_LDADD)
 openssl_SOURCES = apps.c asn1pars.c ca.c ciphers.c crl.c crl2p7.c \
-	dgst.c dh.c dhparam.c dsa.c dsaparam.c ec.c ecparam.c enc.c \
-	errstr.c gendh.c gendsa.c genpkey.c genrsa.c nseq.c ocsp.c \
-	openssl.c passwd.c pkcs12.c pkcs7.c pkcs8.c pkey.c pkeyparam.c \
-	pkeyutl.c prime.c rand.c req.c rsa.c rsautl.c s_cb.c \
-	s_client.c s_server.c s_socket.c s_time.c sess_id.c smime.c \
-	speed.c spkac.c ts.c verify.c version.c x509.c $(am__append_1) \
-	$(am__append_2) $(am__append_3) $(am__append_4) \
-	$(am__append_5) $(am__append_6) $(am__append_7)
+	cms.c dgst.c dh.c dhparam.c dsa.c dsaparam.c ec.c ecparam.c \
+	enc.c errstr.c gendh.c gendsa.c genpkey.c genrsa.c nseq.c \
+	ocsp.c openssl.c passwd.c pkcs12.c pkcs7.c pkcs8.c pkey.c \
+	pkeyparam.c pkeyutl.c prime.c rand.c req.c rsa.c rsautl.c \
+	s_cb.c s_client.c s_server.c s_socket.c s_time.c sess_id.c \
+	smime.c speed.c spkac.c ts.c verify.c version.c x509.c \
+	$(am__append_1) $(am__append_2) $(am__append_3) \
+	$(am__append_4) $(am__append_5) $(am__append_6) \
+	$(am__append_7)
 noinst_HEADERS = apps.h progs.h s_apps.h testdsa.h testrsa.h \
 	timeouts.h
 EXTRA_DIST = cert.pem openssl.cnf x509v3.cnf CMakeLists.txt
@@ -535,6 +536,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/certhash.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/certhash_win.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/ciphers.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/cms.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/crl.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/crl2p7.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/dgst.Po@am__quote@ # am--include-marker
@@ -798,6 +800,7 @@ distclean: distclean-am
 	-rm -f ./$(DEPDIR)/certhash.Po
 	-rm -f ./$(DEPDIR)/certhash_win.Po
 	-rm -f ./$(DEPDIR)/ciphers.Po
+	-rm -f ./$(DEPDIR)/cms.Po
 	-rm -f ./$(DEPDIR)/crl.Po
 	-rm -f ./$(DEPDIR)/crl2p7.Po
 	-rm -f ./$(DEPDIR)/dgst.Po
@@ -898,6 +901,7 @@ maintainer-clean: maintainer-clean-am
 	-rm -f ./$(DEPDIR)/certhash.Po
 	-rm -f ./$(DEPDIR)/certhash_win.Po
 	-rm -f ./$(DEPDIR)/ciphers.Po
+	-rm -f ./$(DEPDIR)/cms.Po
 	-rm -f ./$(DEPDIR)/crl.Po
 	-rm -f ./$(DEPDIR)/crl2p7.Po
 	-rm -f ./$(DEPDIR)/dgst.Po

@@ -89,8 +89,8 @@ PRE_UNINSTALL = :
 POST_UNINSTALL = :
 build_triplet = @build@
 host_triplet = @host@
-@OPENSSLDIR_DEFINED_TRUE@am__append_1 = -D_PATH_SSL_CA_FILE=\"@OPENSSLDIR@/cert.pem\"
-@OPENSSLDIR_DEFINED_FALSE@am__append_2 = -D_PATH_SSL_CA_FILE=\"$(sysconfdir)/ssl/cert.pem\"
+@OPENSSLDIR_DEFINED_TRUE@am__append_1 = -DTLS_DEFAULT_CA_FILE=\"@OPENSSLDIR@/cert.pem\"
+@OPENSSLDIR_DEFINED_FALSE@am__append_2 = -DTLS_DEFAULT_CA_FILE=\"$(sysconfdir)/ssl/cert.pem\"
 @HOST_WIN_TRUE@am__append_3 = compat/ftruncate.c compat/pread.c \
 @HOST_WIN_TRUE@	compat/pwrite.c
 subdir = tls
