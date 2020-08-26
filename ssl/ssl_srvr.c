@@ -1,4 +1,4 @@
-/* $OpenBSD: ssl_srvr.c,v 1.77 2020/05/31 16:36:35 jsing Exp $ */
+/* $OpenBSD: ssl_srvr.c,v 1.80 2020/07/03 04:12:50 tb Exp $ */
 /* Copyright (C) 1995-1998 Eric Young (eay@cryptsoft.com)
  * All rights reserved.
  *
@@ -1025,7 +1025,7 @@ ssl3_get_client_hello(SSL *s)
 		goto f_err;
 	}
 
-	if (!tlsext_server_parse(s, &cbs, &al, SSL_TLSEXT_MSG_CH)) {
+	if (!tlsext_server_parse(s, SSL_TLSEXT_MSG_CH, &cbs, &al)) {
 		SSLerror(s, SSL_R_PARSE_TLSEXT);
 		goto f_err;
 	}
@@ -1233,7 +1233,7 @@ ssl3_send_server_hello(SSL *s)
 			goto err;
 
 		/* TLS extensions */
-		if (!tlsext_server_build(s, &server_hello, SSL_TLSEXT_MSG_SH)) {
+		if (!tlsext_server_build(s, SSL_TLSEXT_MSG_SH, &server_hello)) {
 			SSLerror(s, ERR_R_INTERNAL_ERROR);
 			goto err;
 		}
@@ -1778,7 +1778,8 @@ ssl3_get_client_kex_rsa(SSL *s, CBS *cbs)
 static int
 ssl3_get_client_kex_dhe(SSL *s, CBS *cbs)
 {
-	int key_size = 0, key_len, al;
+	int key_size = 0;
+	int key_is_invalid, key_len, al;
 	unsigned char *key = NULL;
 	BIGNUM *bn = NULL;
 	CBS dh_Yc;
@@ -1809,9 +1810,20 @@ ssl3_get_client_kex_dhe(SSL *s, CBS *cbs)
 		SSLerror(s, ERR_R_MALLOC_FAILURE);
 		goto err;
 	}
-	if ((key_len = DH_compute_key(key, bn, dh)) <= 0) {
+	if (!DH_check_pub_key(dh, bn, &key_is_invalid)) {
+		al = SSL_AD_INTERNAL_ERROR;
 		SSLerror(s, ERR_R_DH_LIB);
-		goto err;
+		goto f_err;
+	}
+	if (key_is_invalid) {
+		al = SSL_AD_ILLEGAL_PARAMETER;
+		SSLerror(s, ERR_R_DH_LIB);
+		goto f_err;
+	}
+	if ((key_len = DH_compute_key(key, bn, dh)) <= 0) {
+		al = SSL_AD_INTERNAL_ERROR;
+		SSLerror(s, ERR_R_DH_LIB);
+		goto f_err;
 	}
 
 	s->session->master_key_length = tls1_generate_master_secret(s,
@@ -2184,6 +2196,13 @@ ssl3_get_cert_verify(SSL *s)
 		    (!EVP_PKEY_CTX_set_rsa_padding
 		    (pctx, RSA_PKCS1_PSS_PADDING) ||
 		    !EVP_PKEY_CTX_set_rsa_pss_saltlen(pctx, -1))) {
+			al = SSL_AD_INTERNAL_ERROR;
+			goto f_err;
+		}
+		if (sigalg->key_type == EVP_PKEY_GOSTR01 &&
+		    EVP_PKEY_CTX_ctrl(pctx, -1, EVP_PKEY_OP_VERIFY,
+		    EVP_PKEY_CTRL_GOST_SIG_FORMAT, GOST_SIG_FORMAT_RS_LE,
+		    NULL) <= 0) {
 			al = SSL_AD_INTERNAL_ERROR;
 			goto f_err;
 		}

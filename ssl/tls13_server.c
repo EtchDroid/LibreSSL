@@ -1,4 +1,4 @@
-/* $OpenBSD: tls13_server.c,v 1.55 2020/05/29 18:00:10 jsing Exp $ */
+/* $OpenBSD: tls13_server.c,v 1.61 2020/07/03 04:12:51 tb Exp $ */
 /*
  * Copyright (c) 2019, 2020 Joel Sing <jsing@openbsd.org>
  * Copyright (c) 2020 Bob Beck <beck@openbsd.org>
@@ -96,6 +96,44 @@ tls13_client_hello_is_legacy(CBS *cbs)
 	return (max_version < TLS1_3_VERSION);
 }
 
+int
+tls13_client_hello_required_extensions(struct tls13_ctx *ctx)
+{
+	SSL *ssl = ctx->ssl;
+
+	/*
+	 * RFC 8446, section 9.2. If the ClientHello has supported_versions
+	 * containing TLSv1.3, presence or absence of some extensions requires
+	 * presence or absence of others.
+	 */
+
+	/*
+	 * If we got no pre_shared_key, then signature_algorithms and
+	 * supported_groups must both be present.
+	 */
+	if (!tlsext_extension_seen(ssl, TLSEXT_TYPE_pre_shared_key)) {
+		if (!tlsext_extension_seen(ssl, TLSEXT_TYPE_signature_algorithms))
+			return 0;
+		if (!tlsext_extension_seen(ssl, TLSEXT_TYPE_supported_groups))
+			return 0;
+	}
+
+	/*
+	 * supported_groups and key_share must either both be present or
+	 * both be absent.
+	 */
+	if (tlsext_extension_seen(ssl, TLSEXT_TYPE_supported_groups) !=
+	    tlsext_extension_seen(ssl, TLSEXT_TYPE_key_share))
+		return 0;
+
+	/*
+	 * XXX - Require server_name from client? If so, we SHOULD enforce
+	 * this here - RFC 8446, 9.2.
+	 */
+
+	return 1;
+}
+
 static const uint8_t tls13_compression_null_only[] = { 0 };
 
 static int
@@ -126,8 +164,54 @@ tls13_client_hello_process(struct tls13_ctx *ctx, CBS *cbs)
 		return tls13_use_legacy_server(ctx);
 	}
 
-	if (!tlsext_server_parse(s, cbs, &alert_desc, SSL_TLSEXT_MSG_CH)) {
+	/* Add decoded values to the current ClientHello hash */
+	if (!tls13_clienthello_hash_init(ctx)) {
+		ctx->alert = TLS13_ALERT_INTERNAL_ERROR;
+		goto err;
+	}
+	if (!tls13_clienthello_hash_update_bytes(ctx, (void *)&legacy_version,
+	    sizeof(legacy_version))) {
+		ctx->alert = TLS13_ALERT_INTERNAL_ERROR;
+		goto err;
+	}
+	if (!tls13_clienthello_hash_update(ctx, &client_random)) {
+		ctx->alert = TLS13_ALERT_INTERNAL_ERROR;
+		goto err;
+	}
+	if (!tls13_clienthello_hash_update(ctx, &session_id)) {
+		ctx->alert = TLS13_ALERT_INTERNAL_ERROR;
+		goto err;
+	}
+	if (!tls13_clienthello_hash_update(ctx, &cipher_suites)) {
+		ctx->alert = TLS13_ALERT_INTERNAL_ERROR;
+		goto err;
+	}
+	if (!tls13_clienthello_hash_update(ctx, &compression_methods)) {
+		ctx->alert = TLS13_ALERT_INTERNAL_ERROR;
+		goto err;
+	}
+
+	if (!tlsext_server_parse(s, SSL_TLSEXT_MSG_CH, cbs, &alert_desc)) {
 		ctx->alert = alert_desc;
+		goto err;
+	}
+
+	/* Finalize first ClientHello hash, or validate against it */
+	if (!ctx->hs->hrr) {
+		if (!tls13_clienthello_hash_finalize(ctx)) {
+			ctx->alert = TLS13_ALERT_INTERNAL_ERROR;
+			goto err;
+		}
+	} else {
+		if (!tls13_clienthello_hash_validate(ctx)) {
+			ctx->alert = TLS13_ALERT_ILLEGAL_PARAMETER;
+			goto err;
+		}
+		tls13_clienthello_hash_clear(ctx->hs);
+	}
+
+	if (!tls13_client_hello_required_extensions(ctx)) {
+		ctx->alert = TLS13_ALERT_MISSING_EXTENSION;
 		goto err;
 	}
 
@@ -146,8 +230,11 @@ tls13_client_hello_process(struct tls13_ctx *ctx, CBS *cbs)
 		goto err;
 	}
 	if (!CBS_write_bytes(&session_id, ctx->hs->legacy_session_id,
-	    sizeof(ctx->hs->legacy_session_id), &ctx->hs->legacy_session_id_len))
+	    sizeof(ctx->hs->legacy_session_id),
+	    &ctx->hs->legacy_session_id_len)) {
+		ctx->alert = TLS13_ALERT_INTERNAL_ERROR;
 		goto err;
+	}
 
 	/* Parse cipher suites list and select preferred cipher. */
 	if ((ciphers = ssl_bytes_to_cipher_list(s, &cipher_suites)) == NULL) {
@@ -243,7 +330,7 @@ tls13_server_hello_build(struct tls13_ctx *ctx, CBB *cbb, int hrr)
 		goto err;
 	if (!CBB_add_u8(cbb, 0))
 		goto err;
-	if (!tlsext_server_build(s, cbb, tlsext_msg_type))
+	if (!tlsext_server_build(s, tlsext_msg_type, cbb))
 		goto err;
 
 	if (!CBB_flush(cbb))
@@ -255,7 +342,7 @@ err:
 }
 
 static int
-tls13_server_engage_record_protection(struct tls13_ctx *ctx) 
+tls13_server_engage_record_protection(struct tls13_ctx *ctx)
 {
 	struct tls13_secrets *secrets;
 	struct tls13_secret context;
@@ -424,7 +511,7 @@ tls13_server_hello_sent(struct tls13_ctx *ctx)
 int
 tls13_server_encrypted_extensions_send(struct tls13_ctx *ctx, CBB *cbb)
 {
-	if (!tlsext_server_build(ctx->ssl, cbb, SSL_TLSEXT_MSG_EE))
+	if (!tlsext_server_build(ctx->ssl, SSL_TLSEXT_MSG_EE, cbb))
 		goto err;
 
 	return 1;
@@ -439,7 +526,7 @@ tls13_server_certificate_request_send(struct tls13_ctx *ctx, CBB *cbb)
 
 	if (!CBB_add_u8_length_prefixed(cbb, &certificate_request_context))
 		goto err;
-	if (!tlsext_server_build(ctx->ssl, cbb, SSL_TLSEXT_MSG_CR))
+	if (!tlsext_server_build(ctx->ssl, SSL_TLSEXT_MSG_CR, cbb))
 		goto err;
 
 	if (!CBB_flush(cbb))
@@ -469,7 +556,7 @@ tls13_server_check_certificate(struct tls13_ctx *ctx, CERT_PKEY *cpk,
 	/*
 	 * The digitalSignature bit MUST be set if the Key Usage extension is
 	 * present as per RFC 8446 section 4.4.2.2.
-	 */ 
+	 */
 	if ((cpk->x509->ex_flags & EXFLAG_KUSAGE) &&
 	    !(cpk->x509->ex_kusage & X509v3_KU_DIGITAL_SIGNATURE))
 		goto done;
@@ -483,7 +570,7 @@ tls13_server_check_certificate(struct tls13_ctx *ctx, CERT_PKEY *cpk,
  done:
 	return 1;
 }
- 
+
 static int
 tls13_server_select_certificate(struct tls13_ctx *ctx, CERT_PKEY **out_cpk,
     const struct ssl_sigalg **out_sigalg)
@@ -508,7 +595,8 @@ tls13_server_select_certificate(struct tls13_ctx *ctx, CERT_PKEY **out_cpk,
 	if (cert_ok)
 		goto done;
 
-	return 0;
+	cpk = NULL;
+	sigalg = NULL;
 
  done:
 	*out_cpk = cpk;
@@ -528,7 +616,10 @@ tls13_server_certificate_send(struct tls13_ctx *ctx, CBB *cbb)
 	X509 *cert;
 	int i, ret = 0;
 
-	if (!tls13_server_select_certificate(ctx, &cpk, &sigalg)) {
+	if (!tls13_server_select_certificate(ctx, &cpk, &sigalg))
+		goto err;
+
+	if (cpk == NULL) {
 		/* A server must always provide a certificate. */
 		ctx->alert = TLS13_ALERT_HANDSHAKE_FAILURE;
 		tls13_set_errorx(ctx, TLS13_ERR_NO_CERTIFICATE, 0,
@@ -586,7 +677,7 @@ tls13_server_certificate_verify_send(struct tls13_ctx *ctx, CBB *cbb)
 	memset(&sig_cbb, 0, sizeof(sig_cbb));
 
 	if ((cpk = ctx->hs->cpk) == NULL)
- 		goto err;
+		goto err;
 	if ((sigalg = ctx->hs->sigalg) == NULL)
 		goto err;
 	pkey = cpk->privatekey;

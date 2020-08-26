@@ -1,4 +1,4 @@
-/* $OpenBSD: ssl_locl.h,v 1.279 2020/05/31 18:03:32 jsing Exp $ */
+/* $OpenBSD: ssl_locl.h,v 1.283 2020/08/11 18:40:24 jsing Exp $ */
 /* Copyright (C) 1995-1998 Eric Young (eay@cryptsoft.com)
  * All rights reserved.
  *
@@ -385,9 +385,6 @@ typedef struct ssl_method_internal_st {
 
 	const struct ssl_method_st *(*get_ssl_method)(int version);
 
-	long (*get_timeout)(void);
-	int (*ssl_version)(void);
-
 	struct ssl3_enc_method *ssl3_enc; /* Extra SSLv3/TLS stuff */
 } SSL_METHOD_INTERNAL;
 
@@ -470,6 +467,12 @@ typedef struct ssl_handshake_tls13_st {
 	/* Legacy session ID. */
 	uint8_t legacy_session_id[SSL_MAX_SSL_SESSION_ID_LENGTH];
 	size_t legacy_session_id_len;
+
+	/* ClientHello hash, used to validate following HelloRetryRequest */
+	EVP_MD_CTX *clienthello_md_ctx;
+	unsigned char *clienthello_hash;
+	unsigned int clienthello_hash_len;
+
 } SSL_HANDSHAKE_TLS13;
 
 typedef struct ssl_ctx_internal_st {
@@ -957,7 +960,7 @@ typedef struct dtls1_state_internal_st {
 	unsigned short handshake_read_seq;
 
 	/* save last sequence number for retransmissions */
-	unsigned char last_write_sequence[8];
+	unsigned char last_write_sequence[SSL3_SEQUENCE_SIZE];
 
 	/* Received handshake records (processed and unprocessed) */
 	record_pqueue unprocessed_rcds;
@@ -1098,6 +1101,7 @@ int ssl_downgrade_max_version(SSL *s, uint16_t *max_ver);
 int ssl_cipher_is_permitted(const SSL_CIPHER *cipher, uint16_t min_ver,
     uint16_t max_ver);
 
+const SSL_METHOD *tls_legacy_method(void);
 const SSL_METHOD *tls_legacy_client_method(void);
 const SSL_METHOD *tls_legacy_server_method(void);
 
@@ -1219,7 +1223,6 @@ int ssl3_record_write(SSL *s, int type);
 void tls1_record_sequence_increment(unsigned char *seq);
 int ssl3_do_change_cipher_spec(SSL *ssl);
 
-long tls1_default_timeout(void);
 int dtls1_do_write(SSL *s, int type);
 int ssl3_packet_read(SSL *s, int plen);
 int ssl3_packet_extend(SSL *s, int plen);
@@ -1249,7 +1252,6 @@ void dtls1_get_ccs_header(unsigned char *data, struct ccs_header_st *ccs_hdr);
 void dtls1_reset_seq_numbers(SSL *s, int rw);
 void dtls1_build_sequence_number(unsigned char *dst, unsigned char *seq,
     unsigned short epoch);
-long dtls1_default_timeout(void);
 struct timeval* dtls1_get_timeout(SSL *s, struct timeval* timeleft);
 int dtls1_check_timeout_num(SSL *s);
 int dtls1_handle_timeout(SSL *s);

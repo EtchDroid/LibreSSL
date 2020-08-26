@@ -1,4 +1,4 @@
-/* $OpenBSD: tls13_client.c,v 1.64 2020/05/23 11:58:46 jsing Exp $ */
+/* $OpenBSD: tls13_client.c,v 1.66 2020/07/03 04:12:51 tb Exp $ */
 /*
  * Copyright (c) 2018, 2019 Joel Sing <jsing@openbsd.org>
  *
@@ -118,7 +118,7 @@ tls13_client_hello_build(struct tls13_ctx *ctx, CBB *cbb)
 	if (!CBB_add_u8(&compression_methods, 0))
 		goto err;
 
-	if (!tlsext_client_build(s, cbb, SSL_TLSEXT_MSG_CH))
+	if (!tlsext_client_build(s, SSL_TLSEXT_MSG_CH, cbb))
 		goto err;
 
 	if (!CBB_flush(cbb))
@@ -265,7 +265,7 @@ tls13_server_hello_process(struct tls13_ctx *ctx, CBS *cbs)
 		ctx->hs->hrr = 1;
 	}
 
-	if (!tlsext_client_parse(s, cbs, &alert_desc, tlsext_msg_type)) {
+	if (!tlsext_client_parse(s, tlsext_msg_type, cbs, &alert_desc)) {
 		ctx->alert = alert_desc;
 		goto err;
 	}
@@ -504,7 +504,7 @@ tls13_server_encrypted_extensions_recv(struct tls13_ctx *ctx, CBS *cbs)
 {
 	int alert_desc;
 
-	if (!tlsext_client_parse(ctx->ssl, cbs, &alert_desc, SSL_TLSEXT_MSG_EE)) {
+	if (!tlsext_client_parse(ctx->ssl, SSL_TLSEXT_MSG_EE, cbs, &alert_desc)) {
 		ctx->alert = alert_desc;
 		goto err;
 	}
@@ -540,7 +540,7 @@ tls13_server_certificate_request_recv(struct tls13_ctx *ctx, CBS *cbs)
 	if (CBS_len(&cert_request_context) != 0)
 		goto err;
 
-	if (!tlsext_client_parse(ctx->ssl, cbs, &alert_desc, SSL_TLSEXT_MSG_CR)) {
+	if (!tlsext_client_parse(ctx->ssl, SSL_TLSEXT_MSG_CR, cbs, &alert_desc)) {
 		ctx->alert = alert_desc;
 		goto err;
 	}
@@ -580,8 +580,8 @@ tls13_server_certificate_recv(struct tls13_ctx *ctx, CBS *cbs)
 		if (!CBS_get_u24_length_prefixed(&cert_list, &cert_data))
 			goto err;
 
-		if (!tlsext_client_parse(ctx->ssl, &cert_list, &alert_desc,
-		    SSL_TLSEXT_MSG_CT)) {
+		if (!tlsext_client_parse(ctx->ssl, SSL_TLSEXT_MSG_CT,
+		    &cert_list, &alert_desc)) {
 			ctx->alert = alert_desc;
 			goto err;
 		}
@@ -826,29 +826,97 @@ tls13_server_finished_recv(struct tls13_ctx *ctx, CBS *cbs)
 	return ret;
 }
 
+static int
+tls13_client_check_certificate(struct tls13_ctx *ctx, CERT_PKEY *cpk,
+    int *ok, const struct ssl_sigalg **out_sigalg)
+{
+	const struct ssl_sigalg *sigalg;
+	SSL *s = ctx->ssl;
+
+	*ok = 0;
+	*out_sigalg = NULL;
+
+	if (cpk->x509 == NULL || cpk->privatekey == NULL)
+		goto done;
+
+	if ((sigalg = ssl_sigalg_select(s, cpk->privatekey)) == NULL)
+		goto done;
+
+	*ok = 1;
+	*out_sigalg = sigalg;
+
+ done:
+	return 1;
+}
+
+static int
+tls13_client_select_certificate(struct tls13_ctx *ctx, CERT_PKEY **out_cpk,
+    const struct ssl_sigalg **out_sigalg)
+{
+	SSL *s = ctx->ssl;
+	const struct ssl_sigalg *sigalg;
+	CERT_PKEY *cpk;
+	int cert_ok;
+
+	*out_cpk = NULL;
+	*out_sigalg = NULL;
+
+	/*
+	 * XXX - RFC 8446, 4.4.2.3: the server can communicate preferences
+	 * with the certificate_authorities (4.2.4) and oid_filters (4.2.5)
+	 * extensions. We should honor the former and must apply the latter.
+	 */
+
+	cpk = &s->cert->pkeys[SSL_PKEY_ECC];
+	if (!tls13_client_check_certificate(ctx, cpk, &cert_ok, &sigalg))
+		return 0;
+	if (cert_ok)
+		goto done;
+
+	cpk = &s->cert->pkeys[SSL_PKEY_RSA];
+	if (!tls13_client_check_certificate(ctx, cpk, &cert_ok, &sigalg))
+		return 0;
+	if (cert_ok)
+		goto done;
+
+	cpk = NULL;
+	sigalg = NULL;
+
+ done:
+	*out_cpk = cpk;
+	*out_sigalg = sigalg;
+
+	return 1;
+}
+
 int
 tls13_client_certificate_send(struct tls13_ctx *ctx, CBB *cbb)
 {
 	SSL *s = ctx->ssl;
 	CBB cert_request_context, cert_list;
+	const struct ssl_sigalg *sigalg;
 	STACK_OF(X509) *chain;
 	CERT_PKEY *cpk;
 	X509 *cert;
 	int i, ret = 0;
 
-	/* XXX - Need to revisit certificate selection. */
-	cpk = &s->cert->pkeys[SSL_PKEY_RSA];
+	if (!tls13_client_select_certificate(ctx, &cpk, &sigalg))
+		goto err;
 
-	if ((chain = cpk->chain) == NULL)
-		chain = s->ctx->extra_certs;
+	ctx->hs->cpk = cpk;
+	ctx->hs->sigalg = sigalg;
 
 	if (!CBB_add_u8_length_prefixed(cbb, &cert_request_context))
 		goto err;
 	if (!CBB_add_u24_length_prefixed(cbb, &cert_list))
 		goto err;
 
-	if (cpk->x509 == NULL)
+	/* No certificate selected. */
+	if (cpk == NULL)
 		goto done;
+
+	if ((chain = cpk->chain) == NULL)
+	       chain = s->ctx->extra_certs;
 
 	if (!tls13_cert_add(ctx, &cert_list, cpk->x509, tlsext_client_build))
 		goto err;
@@ -873,27 +941,23 @@ tls13_client_certificate_send(struct tls13_ctx *ctx, CBB *cbb)
 int
 tls13_client_certificate_verify_send(struct tls13_ctx *ctx, CBB *cbb)
 {
-	SSL *s = ctx->ssl;
-	const struct ssl_sigalg *sigalg = NULL;
+	const struct ssl_sigalg *sigalg;
 	uint8_t *sig = NULL, *sig_content = NULL;
 	size_t sig_len, sig_content_len;
 	EVP_MD_CTX *mdctx = NULL;
 	EVP_PKEY_CTX *pctx;
 	EVP_PKEY *pkey;
-	CERT_PKEY *cpk;
+	const CERT_PKEY *cpk;
 	CBB sig_cbb;
 	int ret = 0;
 
 	memset(&sig_cbb, 0, sizeof(sig_cbb));
 
-	/* XXX - Need to revisit certificate selection. */
-	cpk = &s->cert->pkeys[SSL_PKEY_RSA];
-	pkey = cpk->privatekey;
-
-	if ((sigalg = ssl_sigalg_select(s, pkey)) == NULL) {
-		/* XXX - SSL_R_SIGNATURE_ALGORITHMS_ERROR */
+	if ((cpk = ctx->hs->cpk) == NULL)
 		goto err;
-	}
+	if ((sigalg = ctx->hs->sigalg) == NULL)
+		goto err;
+	pkey = cpk->privatekey;
 
 	if (!CBB_init(&sig_cbb, 0))
 		goto err;

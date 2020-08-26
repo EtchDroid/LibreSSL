@@ -1,4 +1,4 @@
-/* $OpenBSD: ssl_versions.c,v 1.7 2019/04/04 15:47:15 jsing Exp $ */
+/* $OpenBSD: ssl_versions.c,v 1.9 2020/08/09 16:30:29 jsing Exp $ */
 /*
  * Copyright (c) 2016, 2017 Joel Sing <jsing@openbsd.org>
  *
@@ -493,14 +493,14 @@ static struct min_max_version_test min_max_version_tests[] = {
 		.minver = 0,
 		.maxver = 0,
 		.want_minver = TLS1_VERSION,
-		.want_maxver = TLS1_2_VERSION,
+		.want_maxver = TLS1_3_VERSION,
 	},
 	{
 		.ssl_method = TLS_method,
 		.minver = TLS1_VERSION,
 		.maxver = 0,
 		.want_minver = TLS1_VERSION,
-		.want_maxver = TLS1_2_VERSION,
+		.want_maxver = TLS1_3_VERSION,
 	},
 	{
 		.ssl_method = TLS_method,
@@ -514,7 +514,7 @@ static struct min_max_version_test min_max_version_tests[] = {
 		.minver = 0,
 		.maxver = TLS1_3_VERSION,
 		.want_minver = TLS1_VERSION,
-		.want_maxver = TLS1_2_VERSION,
+		.want_maxver = TLS1_3_VERSION,
 	},
 	{
 		.ssl_method = TLS_method,
@@ -528,21 +528,21 @@ static struct min_max_version_test min_max_version_tests[] = {
 		.minver = TLS1_1_VERSION,
 		.maxver = 0,
 		.want_minver = TLS1_1_VERSION,
-		.want_maxver = TLS1_2_VERSION,
+		.want_maxver = TLS1_3_VERSION,
 	},
 	{
 		.ssl_method = TLS_method,
 		.minver = TLS1_2_VERSION,
 		.maxver = 0,
 		.want_minver = TLS1_2_VERSION,
-		.want_maxver = TLS1_2_VERSION,
+		.want_maxver = TLS1_3_VERSION,
 	},
 	{
 		.ssl_method = TLS_method,
 		.minver = 0x0300,
 		.maxver = 0,
 		.want_minver = TLS1_VERSION,
-		.want_maxver = TLS1_2_VERSION,
+		.want_maxver = TLS1_3_VERSION,
 	},
 	{
 		.ssl_method = TLS_method,
@@ -556,7 +556,7 @@ static struct min_max_version_test min_max_version_tests[] = {
 		.minver = 0,
 		.maxver = 0x0305,
 		.want_minver = TLS1_VERSION,
-		.want_maxver = TLS1_2_VERSION,
+		.want_maxver = TLS1_3_VERSION,
 	},
 	{
 		.ssl_method = TLS_method,
@@ -686,11 +686,13 @@ test_ssl_min_max_version(void)
 		if (mmvt->want_minver == 0) {
 			fprintf(stderr, "FAIL: test %zu - successfully set "
 			    "SSL_CTX min version, should have failed\n", i);
+			failed++;
 			goto next;
 		}
 		if (mmvt->want_maxver == 0) {
 			fprintf(stderr, "FAIL: test %zu - successfully set "
 			    "SSL_CTX max version, should have failed\n", i);
+			failed++;
 			goto next;
 		}
 
@@ -698,12 +700,14 @@ test_ssl_min_max_version(void)
 			fprintf(stderr, "FAIL: test %zu - got SSL_CTX min "
 			    "version 0x%x, want 0x%x\n", i,
 			    SSL_CTX_get_min_proto_version(ssl_ctx), mmvt->want_minver);
+			failed++;
 			goto next;
 		}
 		if (SSL_CTX_get_max_proto_version(ssl_ctx) != mmvt->want_maxver) {
 			fprintf(stderr, "FAIL: test %zu - got SSL_CTX max "
 			    "version 0x%x, want 0x%x\n", i,
 			    SSL_CTX_get_max_proto_version(ssl_ctx), mmvt->want_maxver);
+			failed++;
 			goto next;
 		}
 
@@ -716,12 +720,14 @@ test_ssl_min_max_version(void)
 			fprintf(stderr, "FAIL: test %zu - initial SSL min "
 			    "version 0x%x, want 0x%x\n", i,
 			    SSL_get_min_proto_version(ssl), mmvt->want_minver);
+			failed++;
 			goto next;
 		}
 		if (SSL_get_max_proto_version(ssl) != mmvt->want_maxver) {
 			fprintf(stderr, "FAIL: test %zu - initial SSL max "
 			    "version 0x%x, want 0x%x\n", i,
 			    SSL_get_max_proto_version(ssl), mmvt->want_maxver);
+			failed++;
 			goto next;
 		}
 
@@ -745,11 +751,13 @@ test_ssl_min_max_version(void)
 		if (mmvt->want_minver == 0) {
 			fprintf(stderr, "FAIL: test %zu - successfully set SSL "
 			    "min version, should have failed\n", i);
+			failed++;
 			goto next;
 		}
 		if (mmvt->want_maxver == 0) {
 			fprintf(stderr, "FAIL: test %zu - successfully set SSL "
 			    "max version, should have failed\n", i);
+			failed++;
 			goto next;
 		}
 
@@ -757,12 +765,14 @@ test_ssl_min_max_version(void)
 			fprintf(stderr, "FAIL: test %zu - got SSL min "
 			    "version 0x%x, want 0x%x\n", i,
 			    SSL_get_min_proto_version(ssl), mmvt->want_minver);
+			failed++;
 			goto next;
 		}
 		if (SSL_get_max_proto_version(ssl) != mmvt->want_maxver) {
 			fprintf(stderr, "FAIL: test %zu - got SSL max "
 			    "version 0x%x, want 0x%x\n", i,
 			    SSL_get_max_proto_version(ssl), mmvt->want_maxver);
+			failed++;
 			goto next;
 		}
 

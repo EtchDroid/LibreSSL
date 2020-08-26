@@ -1,4 +1,4 @@
-/* $OpenBSD: tls13_record_layer.c,v 1.47 2020/05/29 17:54:58 jsing Exp $ */
+/* $OpenBSD: tls13_record_layer.c,v 1.52 2020/08/11 19:25:40 jsing Exp $ */
 /*
  * Copyright (c) 2018, 2019 Joel Sing <jsing@openbsd.org>
  *
@@ -51,6 +51,9 @@ struct tls13_record_layer {
 	uint8_t wrec_content_type;
 	size_t wrec_appdata_len;
 	size_t wrec_content_len;
+
+	/* Alert to be sent on return from current read handler. */
+	uint8_t alert;
 
 	/* Pending alert messages. */
 	uint8_t *alert_data;
@@ -432,6 +435,8 @@ tls13_record_layer_set_traffic_key(const EVP_AEAD *aead, EVP_AEAD_CTX *aead_ctx,
 	struct tls13_secret key = { .data = NULL, .len = 0 };
 	int ret = 0;
 
+	EVP_AEAD_CTX_cleanup(aead_ctx);
+
 	freezero(iv->data, iv->len);
 	iv->data = NULL;
 	iv->len = 0;
@@ -504,6 +509,11 @@ tls13_record_layer_open_record_plaintext(struct tls13_record_layer *rl)
 	if (!tls13_record_content(rl->rrec, &cbs))
 		return 0;
 
+	if (CBS_len(&cbs) > TLS13_RECORD_MAX_PLAINTEXT_LEN) {
+		rl->alert = SSL_AD_RECORD_OVERFLOW;
+		return 0;
+	}
+
 	tls13_record_layer_rbuf_free(rl);
 
 	if (!CBS_stow(&cbs, &rl->rbuf, &rl->rbuf_len))
@@ -520,8 +530,9 @@ static int
 tls13_record_layer_open_record_protected(struct tls13_record_layer *rl)
 {
 	CBS header, enc_record;
+	ssize_t inner_len;
 	uint8_t *content = NULL;
-	ssize_t content_len = 0;
+	size_t content_len = 0;
 	uint8_t content_type;
 	size_t out_len;
 
@@ -548,8 +559,10 @@ tls13_record_layer_open_record_protected(struct tls13_record_layer *rl)
 	    CBS_data(&header), CBS_len(&header)))
 		goto err;
 
-	if (out_len > TLS13_RECORD_MAX_INNER_PLAINTEXT_LEN)
+	if (out_len > TLS13_RECORD_MAX_INNER_PLAINTEXT_LEN) {
+		rl->alert = SSL_AD_RECORD_OVERFLOW;
 		goto err;
+	}
 
 	if (!tls13_record_layer_inc_seq_num(rl->read_seq_num))
 		goto err;
@@ -560,20 +573,25 @@ tls13_record_layer_open_record_protected(struct tls13_record_layer *rl)
 	 * Time to hunt for that elusive content type!
 	 */
 	/* XXX - CBS from end? CBS_get_end_u8()? */
-	content_len = out_len - 1;
-	while (content_len >= 0 && content[content_len] == 0)
-		content_len--;
-	if (content_len < 0)
+	inner_len = out_len - 1;
+	while (inner_len >= 0 && content[inner_len] == 0)
+		inner_len--;
+	if (inner_len < 0) {
+		/* Unexpected message per RFC 8446 section 5.4. */
+		rl->alert = TLS13_ALERT_UNEXPECTED_MESSAGE;
 		goto err;
-	if (content_len > TLS13_RECORD_MAX_PLAINTEXT_LEN)
+	}
+	if (inner_len > TLS13_RECORD_MAX_PLAINTEXT_LEN) {
+		rl->alert = SSL_AD_RECORD_OVERFLOW;
 		goto err;
-	content_type = content[content_len];
+	}
+	content_type = content[inner_len];
 
 	tls13_record_layer_rbuf_free(rl);
 
 	rl->rbuf_content_type = content_type;
 	rl->rbuf = content;
-	rl->rbuf_len = content_len;
+	rl->rbuf_len = inner_len;
 
 	CBS_init(&rl->rbuf_cbs, rl->rbuf, rl->rbuf_len);
 
@@ -873,6 +891,40 @@ tls13_record_layer_pending(struct tls13_record_layer *rl, uint8_t content_type)
 }
 
 static ssize_t
+tls13_record_layer_recv_phh(struct tls13_record_layer *rl)
+{
+	ssize_t ret = TLS13_IO_FAILURE;
+
+	rl->phh = 1;
+
+	/*
+	 * The post handshake handshake receive callback is allowed to return:
+	 *
+	 * TLS13_IO_WANT_POLLIN  need more handshake data.
+	 * TLS13_IO_WANT_POLLOUT got whole handshake message, response enqueued.
+	 * TLS13_IO_SUCCESS	 got the whole handshake, nothing more to do.
+	 * TLS13_IO_FAILURE	 something broke.
+	 */
+	if (rl->cb.phh_recv != NULL)
+		ret = rl->cb.phh_recv(rl->cb_arg, &rl->rbuf_cbs);
+
+	tls13_record_layer_rbuf_free(rl);
+
+	/* Leave post handshake handshake mode unless we need more data. */
+	if (ret != TLS13_IO_WANT_POLLIN)
+		rl->phh = 0;
+
+	if (ret == TLS13_IO_SUCCESS) {
+		if (rl->phh_retry)
+			return TLS13_IO_WANT_RETRY;
+
+		return TLS13_IO_WANT_POLLIN;
+	}
+
+	return ret;
+}
+
+static ssize_t
 tls13_record_layer_read_internal(struct tls13_record_layer *rl,
     uint8_t content_type, uint8_t *buf, size_t n, int peek)
 {
@@ -900,68 +952,23 @@ tls13_record_layer_read_internal(struct tls13_record_layer *rl,
 	}
 
 	/*
-	 * If we are in post handshake handshake mode, we may not see
+	 * If we are in post handshake handshake mode, we must not see
 	 * any record type that isn't a handshake until we are done.
 	 */
 	if (rl->phh && rl->rbuf_content_type != SSL3_RT_HANDSHAKE)
 		return tls13_send_alert(rl, TLS13_ALERT_UNEXPECTED_MESSAGE);
 
+	/*
+	 * Handshake content can appear as post-handshake messages (yup,
+	 * the RFC reused the same content type...), which means we can
+	 * be trying to read application data and need to handle a
+	 * post-handshake handshake message instead...
+	 */
 	if (rl->rbuf_content_type != content_type) {
-		/*
-		 * Handshake content can appear as post-handshake messages (yup,
-		 * the RFC reused the same content type...), which means we can
-		 * be trying to read application data and need to handle a
-		 * post-handshake handshake message instead...
-		 */
 		if (rl->rbuf_content_type == SSL3_RT_HANDSHAKE) {
-			if (rl->handshake_completed) {
-				rl->phh = 1;
-				ret = TLS13_IO_FAILURE;
-
-				/*
-				 * The post handshake handshake
-				 * receive callback is allowed to
-				 * return:
-				 *
-				 * TLS13_IO_WANT_POLLIN ->
-				 * I need more handshake data.
-				 *
-				 * TLS13_IO_WANT_POLLOUT -> I got the
-				 * whole handshake message, and have
-				 * enqueued a response
-				 *
-				 * TLS13_IO_SUCCESS -> I got the whole handshake,
-				 * nothing more to do
-				 *
-				 * TLS13_IO_FAILURE -> something broke.
-				 */
-				if (rl->cb.phh_recv != NULL) {
-					ret = rl->cb.phh_recv(
-					    rl->cb_arg, &rl->rbuf_cbs);
-				}
-
-				tls13_record_layer_rbuf_free(rl);
-
-				if (ret == TLS13_IO_WANT_POLLIN)
-					return ret;
-
-				/*
-				 * leave post handshake handshake mode
-				 * if we do not need more handshake data
-				 */
-				rl->phh = 0;
-
-				if (ret == TLS13_IO_SUCCESS) {
-					if (rl->phh_retry)
-						return TLS13_IO_WANT_RETRY;
-
-					return TLS13_IO_WANT_POLLIN;
-				}
-
-				return ret;
-			}
+			if (rl->handshake_completed)
+				return tls13_record_layer_recv_phh(rl);
 		}
-
 		return tls13_send_alert(rl, TLS13_ALERT_UNEXPECTED_MESSAGE);
 	}
 
@@ -995,6 +1002,9 @@ tls13_record_layer_peek(struct tls13_record_layer *rl, uint8_t content_type,
 		ret = tls13_record_layer_read_internal(rl, content_type, buf, n, 1);
 	} while (ret == TLS13_IO_WANT_RETRY);
 
+	if (rl->alert != 0)
+		return tls13_send_alert(rl, rl->alert);
+
 	return ret;
 }
 
@@ -1007,6 +1017,9 @@ tls13_record_layer_read(struct tls13_record_layer *rl, uint8_t content_type,
 	do {
 		ret = tls13_record_layer_read_internal(rl, content_type, buf, n, 0);
 	} while (ret == TLS13_IO_WANT_RETRY);
+
+	if (rl->alert != 0)
+		return tls13_send_alert(rl, rl->alert);
 
 	return ret;
 }

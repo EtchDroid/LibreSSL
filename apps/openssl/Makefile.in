@@ -99,7 +99,9 @@ bin_PROGRAMS = openssl$(EXEEXT)
 @HAVE_STRTONUM_FALSE@am__append_7 = compat/strtonum.c
 subdir = apps/openssl
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
-am__aclocal_m4_deps = $(top_srcdir)/m4/check-hardening-options.m4 \
+am__aclocal_m4_deps = $(top_srcdir)/m4/ax_add_fortify_source.m4 \
+	$(top_srcdir)/m4/ax_check_compile_flag.m4 \
+	$(top_srcdir)/m4/check-hardening-options.m4 \
 	$(top_srcdir)/m4/check-libc.m4 \
 	$(top_srcdir)/m4/check-os-options.m4 \
 	$(top_srcdir)/m4/disable-compiler-warnings.m4 \

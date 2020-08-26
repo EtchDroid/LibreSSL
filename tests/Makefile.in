@@ -175,7 +175,9 @@ check_PROGRAMS = aeadtest$(EXEEXT) aes_wrap$(EXEEXT) $(am__EXEEXT_1) \
 @HAVE_PIPE2_FALSE@am__append_15 = compat/pipe2.c
 subdir = tests
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
-am__aclocal_m4_deps = $(top_srcdir)/m4/check-hardening-options.m4 \
+am__aclocal_m4_deps = $(top_srcdir)/m4/ax_add_fortify_source.m4 \
+	$(top_srcdir)/m4/ax_check_compile_flag.m4 \
+	$(top_srcdir)/m4/check-hardening-options.m4 \
 	$(top_srcdir)/m4/check-libc.m4 \
 	$(top_srcdir)/m4/check-os-options.m4 \
 	$(top_srcdir)/m4/disable-compiler-warnings.m4 \

@@ -1,4 +1,4 @@
-/* $OpenBSD: t1_lib.c,v 1.167 2020/05/29 17:39:42 jsing Exp $ */
+/* $OpenBSD: t1_lib.c,v 1.169 2020/08/09 16:25:54 jsing Exp $ */
 /* Copyright (C) 1995-1998 Eric Young (eay@cryptsoft.com)
  * All rights reserved.
  *
@@ -138,14 +138,6 @@ SSL3_ENC_METHOD TLSv1_2_enc_data = {
 	    SSL_ENC_FLAG_SHA256_PRF|SSL_ENC_FLAG_TLS1_2_CIPHERS,
 };
 
-long
-tls1_default_timeout(void)
-{
-	/* 2 hours, the 24 hours mentioned in the TLSv1 spec
-	 * is way too long for http, the cache would over fill */
-	return (60 * 60 * 2);
-}
-
 int
 tls1_new(SSL *s)
 {
@@ -250,7 +242,14 @@ static const uint16_t eccurves_list[] = {
 };
 #endif
 
-static const uint16_t eccurves_default[] = {
+static const uint16_t eccurves_client_default[] = {
+	29,			/* X25519 (29) */
+	23,			/* secp256r1 (23) */
+	24,			/* secp384r1 (24) */
+	25,			/* secp521r1 (25) */
+};
+
+static const uint16_t eccurves_server_default[] = {
 	29,			/* X25519 (29) */
 	23,			/* secp256r1 (23) */
 	24,			/* secp384r1 (24) */
@@ -374,9 +373,15 @@ tls1_get_group_list(SSL *s, int client_groups, const uint16_t **pgroups,
 
 	*pgroups = s->internal->tlsext_supportedgroups;
 	*pgroupslen = s->internal->tlsext_supportedgroups_length;
-	if (*pgroups == NULL) {
-		*pgroups = eccurves_default;
-		*pgroupslen = sizeof(eccurves_default) / 2;
+	if (*pgroups != NULL)
+		return;
+
+	if (!s->server) {
+		*pgroups = eccurves_client_default;
+		*pgroupslen = sizeof(eccurves_client_default) / 2;
+	} else {
+		*pgroups = eccurves_server_default;
+		*pgroupslen = sizeof(eccurves_server_default) / 2;
 	}
 }
 
