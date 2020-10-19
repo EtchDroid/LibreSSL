@@ -147,11 +147,11 @@ am_libssl_la_OBJECTS = bio_ssl.lo bs_ber.lo bs_cbb.lo bs_cbs.lo \
 	ssl_methods.lo ssl_packet.lo ssl_pkt.lo ssl_rsa.lo ssl_sess.lo \
 	ssl_sigalgs.lo ssl_srvr.lo ssl_stat.lo ssl_tlsext.lo \
 	ssl_transcript.lo ssl_txt.lo ssl_versions.lo t1_enc.lo \
-	t1_lib.lo tls13_buffer.lo tls13_client.lo tls13_error.lo \
-	tls13_handshake.lo tls13_handshake_msg.lo \
-	tls13_key_schedule.lo tls13_key_share.lo tls13_legacy.lo \
-	tls13_lib.lo tls13_record.lo tls13_record_layer.lo \
-	tls13_server.lo
+	t1_lib.lo tls12_record_layer.lo tls13_buffer.lo \
+	tls13_client.lo tls13_error.lo tls13_handshake.lo \
+	tls13_handshake_msg.lo tls13_key_schedule.lo \
+	tls13_key_share.lo tls13_legacy.lo tls13_lib.lo \
+	tls13_record.lo tls13_record_layer.lo tls13_server.lo
 libssl_la_OBJECTS = $(am_libssl_la_OBJECTS)
 AM_V_lt = $(am__v_lt_@AM_V@)
 am__v_lt_ = $(am__v_lt_@AM_DEFAULT_V@)
@@ -194,6 +194,7 @@ am__depfiles_remade = ./$(DEPDIR)/bio_ssl.Plo ./$(DEPDIR)/bs_ber.Plo \
 	./$(DEPDIR)/ssl_tlsext.Plo ./$(DEPDIR)/ssl_transcript.Plo \
 	./$(DEPDIR)/ssl_txt.Plo ./$(DEPDIR)/ssl_versions.Plo \
 	./$(DEPDIR)/t1_enc.Plo ./$(DEPDIR)/t1_lib.Plo \
+	./$(DEPDIR)/tls12_record_layer.Plo \
 	./$(DEPDIR)/tls13_buffer.Plo ./$(DEPDIR)/tls13_client.Plo \
 	./$(DEPDIR)/tls13_error.Plo ./$(DEPDIR)/tls13_handshake.Plo \
 	./$(DEPDIR)/tls13_handshake_msg.Plo \
@@ -381,6 +382,8 @@ AM_CPPFLAGS = -I$(top_srcdir)/include -I$(top_srcdir)/include/compat \
 	-D__END_HIDDEN_DECLS=
 lib_LTLIBRARIES = libssl.la
 EXTRA_DIST = VERSION CMakeLists.txt ssl.sym
+CLEANFILES = libssl_la_objects.mk
+EXTRA_libssl_la_DEPENDENCIES = libssl_la_objects.mk
 libssl_la_LDFLAGS = -version-info @LIBSSL_VERSION@ -no-undefined -export-symbols $(top_srcdir)/ssl/ssl.sym
 libssl_la_LIBADD = $(abs_top_builddir)/crypto/libcrypto.la $(PLATFORM_LDADD)
 libssl_la_SOURCES = bio_ssl.c bs_ber.c bs_cbb.c bs_cbs.c d1_both.c \
@@ -390,10 +393,11 @@ libssl_la_SOURCES = bio_ssl.c bs_ber.c bs_cbb.c bs_cbs.c d1_both.c \
 	ssl_kex.c ssl_lib.c ssl_methods.c ssl_packet.c ssl_pkt.c \
 	ssl_rsa.c ssl_sess.c ssl_sigalgs.c ssl_srvr.c ssl_stat.c \
 	ssl_tlsext.c ssl_transcript.c ssl_txt.c ssl_versions.c \
-	t1_enc.c t1_lib.c tls13_buffer.c tls13_client.c tls13_error.c \
-	tls13_handshake.c tls13_handshake_msg.c tls13_key_schedule.c \
-	tls13_key_share.c tls13_legacy.c tls13_lib.c tls13_record.c \
-	tls13_record_layer.c tls13_server.c
+	t1_enc.c t1_lib.c tls12_record_layer.c tls13_buffer.c \
+	tls13_client.c tls13_error.c tls13_handshake.c \
+	tls13_handshake_msg.c tls13_key_schedule.c tls13_key_share.c \
+	tls13_legacy.c tls13_lib.c tls13_record.c tls13_record_layer.c \
+	tls13_server.c
 noinst_HEADERS = bytestring.h srtp.h ssl_locl.h ssl_sigalgs.h \
 	ssl_tlsext.h tls13_internal.h tls13_handshake.h tls13_record.h
 all: all-am
@@ -513,6 +517,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/ssl_versions.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/t1_enc.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/t1_lib.Plo@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/tls12_record_layer.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/tls13_buffer.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/tls13_client.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/tls13_error.Plo@am__quote@ # am--include-marker
@@ -676,6 +681,7 @@ install-strip:
 mostlyclean-generic:
 
 clean-generic:
+	-test -z "$(CLEANFILES)" || rm -f $(CLEANFILES)
 
 distclean-generic:
 	-test -z "$(CONFIG_CLEAN_FILES)" || rm -f $(CONFIG_CLEAN_FILES)
@@ -728,6 +734,7 @@ distclean: distclean-am
 	-rm -f ./$(DEPDIR)/ssl_versions.Plo
 	-rm -f ./$(DEPDIR)/t1_enc.Plo
 	-rm -f ./$(DEPDIR)/t1_lib.Plo
+	-rm -f ./$(DEPDIR)/tls12_record_layer.Plo
 	-rm -f ./$(DEPDIR)/tls13_buffer.Plo
 	-rm -f ./$(DEPDIR)/tls13_client.Plo
 	-rm -f ./$(DEPDIR)/tls13_error.Plo
@@ -823,6 +830,7 @@ maintainer-clean: maintainer-clean-am
 	-rm -f ./$(DEPDIR)/ssl_versions.Plo
 	-rm -f ./$(DEPDIR)/t1_enc.Plo
 	-rm -f ./$(DEPDIR)/t1_lib.Plo
+	-rm -f ./$(DEPDIR)/tls12_record_layer.Plo
 	-rm -f ./$(DEPDIR)/tls13_buffer.Plo
 	-rm -f ./$(DEPDIR)/tls13_client.Plo
 	-rm -f ./$(DEPDIR)/tls13_error.Plo
@@ -871,6 +879,11 @@ uninstall-am: uninstall-libLTLIBRARIES
 
 .PRECIOUS: Makefile
 
+
+libssl_la_objects.mk: Makefile
+	@echo "libssl_la_objects= $(libssl_la_OBJECTS)" \
+	  | sed 's/  */ $$\(abs_top_builddir\)\/ssl\//g' \
+	  > libssl_la_objects.mk
 
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.

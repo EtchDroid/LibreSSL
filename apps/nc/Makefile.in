@@ -133,15 +133,15 @@ am__dirstamp = $(am__leading_dot)dirstamp
 @BUILD_NC_TRUE@	$(am__objects_3) $(am__objects_4)
 nc_OBJECTS = $(am_nc_OBJECTS)
 am__DEPENDENCIES_1 =
-@BUILD_NC_TRUE@nc_DEPENDENCIES =  \
-@BUILD_NC_TRUE@	$(abs_top_builddir)/crypto/libcrypto.la \
-@BUILD_NC_TRUE@	$(abs_top_builddir)/ssl/libssl.la \
-@BUILD_NC_TRUE@	$(abs_top_builddir)/tls/libtls.la \
+@BUILD_NC_TRUE@nc_DEPENDENCIES = $(abs_top_builddir)/tls/libtls.la \
 @BUILD_NC_TRUE@	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1)
 AM_V_lt = $(am__v_lt_@AM_V@)
 am__v_lt_ = $(am__v_lt_@AM_DEFAULT_V@)
 am__v_lt_0 = --silent
 am__v_lt_1 = 
+nc_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) \
+	$(LIBTOOLFLAGS) --mode=link $(CCLD) $(AM_CFLAGS) $(CFLAGS) \
+	$(nc_LDFLAGS) $(LDFLAGS) -o $@
 AM_V_P = $(am__v_P_@AM_V@)
 am__v_P_ = $(am__v_P_@AM_DEFAULT_V@)
 am__v_P_0 = false
@@ -371,9 +371,8 @@ AM_CPPFLAGS = -I$(top_srcdir)/include -I$(top_srcdir)/include/compat \
 	-D__END_HIDDEN_DECLS= $(am__append_1)
 @BUILD_NC_TRUE@@ENABLE_NC_TRUE@dist_man_MANS = nc.1
 @BUILD_NC_TRUE@EXTRA_DIST = nc.1 CMakeLists.txt
-@BUILD_NC_TRUE@nc_LDADD = $(abs_top_builddir)/crypto/libcrypto.la \
-@BUILD_NC_TRUE@	$(abs_top_builddir)/ssl/libssl.la \
-@BUILD_NC_TRUE@	$(abs_top_builddir)/tls/libtls.la \
+@BUILD_NC_TRUE@nc_LDFLAGS = $(abs_top_builddir)/crypto/.libs/libcrypto.a
+@BUILD_NC_TRUE@nc_LDADD = $(abs_top_builddir)/tls/libtls.la \
 @BUILD_NC_TRUE@	$(PLATFORM_LDADD) $(PROG_LDADD)
 @BUILD_NC_TRUE@nc_SOURCES = atomicio.c netcat.c socks.c \
 @BUILD_NC_TRUE@	compat/socket.c $(am__append_2) $(am__append_3) \
@@ -490,7 +489,7 @@ compat/strtonum.$(OBJEXT): compat/$(am__dirstamp) \
 
 nc$(EXEEXT): $(nc_OBJECTS) $(nc_DEPENDENCIES) $(EXTRA_nc_DEPENDENCIES) 
 	@rm -f nc$(EXEEXT)
-	$(AM_V_CCLD)$(LINK) $(nc_OBJECTS) $(nc_LDADD) $(LIBS)
+	$(AM_V_CCLD)$(nc_LINK) $(nc_OBJECTS) $(nc_LDADD) $(LIBS)
 
 mostlyclean-compile:
 	-rm -f *.$(OBJEXT)

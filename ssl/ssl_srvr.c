@@ -1,4 +1,4 @@
-/* $OpenBSD: ssl_srvr.c,v 1.80 2020/07/03 04:12:50 tb Exp $ */
+/* $OpenBSD: ssl_srvr.c,v 1.85 2020/09/24 18:12:00 jsing Exp $ */
 /* Copyright (C) 1995-1998 Eric Young (eay@cryptsoft.com)
  * All rights reserved.
  *
@@ -691,10 +691,8 @@ ssl3_accept(SSL *s)
 				goto end;
 			}
 
-			if (!SSL_IS_DTLS(s)) {
-				BUF_MEM_free(s->internal->init_buf);
-				s->internal->init_buf = NULL;
-			}
+			if (!SSL_IS_DTLS(s))
+				ssl3_release_init_buffer(s);
 
 			/* remove buffering on output */
 			ssl_free_wbio_buffer(s);
@@ -870,9 +868,7 @@ ssl3_get_client_hello(SSL *s)
 	s->client_version = client_version;
 	s->version = shared_version;
 
-	if ((method = tls1_get_server_method(shared_version)) == NULL)
-		method = dtls1_get_server_method(shared_version);
-	if (method == NULL) {
+	if ((method = ssl_get_server_method(shared_version)) == NULL) {
 		SSLerror(s, ERR_R_INTERNAL_ERROR);
 		goto err;
 	}
@@ -920,11 +916,11 @@ ssl3_get_client_hello(SSL *s)
 
 		CBS_dup(&cbs, &ext_block);
 
-		i = ssl_get_prev_session(s, &session_id, &ext_block);
+		i = ssl_get_prev_session(s, &session_id, &ext_block, &al);
 		if (i == 1) { /* previous session */
 			s->internal->hit = 1;
 		} else if (i == -1)
-			goto err;
+			goto f_err;
 		else {
 			/* i == 0 */
 			if (!ssl_get_new_session(s, 1))
@@ -1096,11 +1092,7 @@ ssl3_get_client_hello(SSL *s)
 			s->session->cipher = pref_cipher;
 
 			sk_SSL_CIPHER_free(s->cipher_list);
-			sk_SSL_CIPHER_free(s->internal->cipher_list_by_id);
-
 			s->cipher_list = sk_SSL_CIPHER_dup(s->session->ciphers);
-			s->internal->cipher_list_by_id =
-			    sk_SSL_CIPHER_dup(s->session->ciphers);
 		}
 	}
 
@@ -1356,7 +1348,7 @@ ssl3_send_server_kex_dhe(SSL *s, CBB *cbb)
 static int
 ssl3_send_server_kex_ecdhe_ecp(SSL *s, int nid, CBB *cbb)
 {
-	int curve_id = 0;
+	uint16_t curve_id;
 	EC_KEY *ecdh;
 	CBB ecpoint;
 	int al;
@@ -1418,7 +1410,7 @@ static int
 ssl3_send_server_kex_ecdhe_ecx(SSL *s, int nid, CBB *cbb)
 {
 	uint8_t *public_key = NULL, *private_key = NULL;
-	int curve_id;
+	uint16_t curve_id;
 	CBB ecpoint;
 	int ret = -1;
 

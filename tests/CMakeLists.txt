@@ -2,6 +2,7 @@ include_directories(
 	.
 	../crypto/modes
 	../crypto/asn1
+	../crypto/x509
 	../ssl
 	../tls
 	../apps/openssl
@@ -123,10 +124,12 @@ if(NOT BUILD_SHARED_LIBS)
 	add_test(cipher_list cipher_list)
 endif()
 
-# cipherstest
-add_executable(cipherstest cipherstest.c)
-target_link_libraries(cipherstest ${OPENSSL_LIBS})
-add_test(cipherstest cipherstest)
+if(NOT BUILD_SHARED_LIBS)
+	# cipherstest
+	add_executable(cipherstest cipherstest.c)
+	target_link_libraries(cipherstest ${OPENSSL_LIBS})
+	add_test(cipherstest cipherstest)
+endif()
 
 # clienttest
 # disabled
@@ -143,6 +146,13 @@ add_test(cmstest cmstest)
 add_executable(configtest configtest.c)
 target_link_libraries(configtest ${OPENSSL_LIBS})
 add_test(configtest configtest)
+
+# constraints
+if(NOT BUILD_SHARED_LIBS)
+	add_executable(constraints constraints.c)
+	target_link_libraries(constraints ${OPENSSL_LIBS})
+	add_test(constraints constraints)
+endif()
 
 # cts128test
 add_executable(cts128test cts128test.c)
@@ -532,6 +542,16 @@ endif()
 add_executable(x25519test x25519test.c)
 target_link_libraries(x25519test ${OPENSSL_LIBS})
 add_test(x25519test x25519test)
+
+# x509attribute
+add_executable(x509attribute x509attribute.c)
+target_link_libraries(x509attribute ${OPENSSL_LIBS})
+add_test(x509attribute x509attribute)
+
+# x509_info
+add_executable(x509_info x509_info.c)
+target_link_libraries(x509_info ${OPENSSL_LIBS})
+add_test(x509_info x509_info)
 
 # x509name
 add_executable(x509name x509name.c)

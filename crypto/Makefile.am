@@ -20,6 +20,7 @@ EXTRA_DIST += compat/strcasecmp.c
 
 BUILT_SOURCES = crypto_portable.sym
 CLEANFILES = crypto_portable.sym
+CLEANFILES += libcrypto_la_objects.mk
 
 crypto_portable.sym: crypto.sym  Makefile
 	-echo "generating crypto_portable.sym ..."
@@ -93,8 +94,20 @@ if HOST_WIN
 	-mv crypto_portable.sym.tmp crypto_portable.sym
 endif
 
+libcrypto_la_objects.mk: Makefile
+	@echo "libcrypto_la_objects= $(libcrypto_la_OBJECTS)" \
+	  | sed 's/  */ $$\(abs_top_builddir\)\/crypto\//g' \
+	  > libcrypto_la_objects.mk
+	@echo "libcompat_la_objects= $(libcompat_la_OBJECTS)" \
+	  | sed 's/  */ $$\(abs_top_builddir\)\/crypto\//g' \
+	  >> libcrypto_la_objects.mk
+	@echo "libcompatnoopt_la_objects= $(libcompatnoopt_la_OBJECTS)" \
+	  | sed 's/  */ $$\(abs_top_builddir\)\/crypto\//g' \
+	  >> libcrypto_la_objects.mk
+
 libcrypto_la_LDFLAGS = -version-info @LIBCRYPTO_VERSION@ -no-undefined -export-symbols crypto_portable.sym
 EXTRA_libcrypto_la_DEPENDENCIES = crypto_portable.sym
+EXTRA_libcrypto_la_DEPENDENCIES += libcrypto_la_objects.mk
 libcrypto_la_LIBADD = libcompat.la
 if !HAVE_EXPLICIT_BZERO
 libcrypto_la_LIBADD += libcompatnoopt.la
@@ -918,6 +931,7 @@ libcrypto_la_SOURCES += x509/x509_bcons.c
 libcrypto_la_SOURCES += x509/x509_bitst.c
 libcrypto_la_SOURCES += x509/x509_cmp.c
 libcrypto_la_SOURCES += x509/x509_conf.c
+libcrypto_la_SOURCES += x509/x509_constraints.c
 libcrypto_la_SOURCES += x509/x509_cpols.c
 libcrypto_la_SOURCES += x509/x509_crld.c
 libcrypto_la_SOURCES += x509/x509_d2.c
@@ -930,6 +944,7 @@ libcrypto_la_SOURCES += x509/x509_genn.c
 libcrypto_la_SOURCES += x509/x509_ia5.c
 libcrypto_la_SOURCES += x509/x509_info.c
 libcrypto_la_SOURCES += x509/x509_int.c
+libcrypto_la_SOURCES += x509/x509_issuer_cache.c
 libcrypto_la_SOURCES += x509/x509_lib.c
 libcrypto_la_SOURCES += x509/x509_lu.c
 libcrypto_la_SOURCES += x509/x509_ncons.c
@@ -951,6 +966,7 @@ libcrypto_la_SOURCES += x509/x509_trs.c
 libcrypto_la_SOURCES += x509/x509_txt.c
 libcrypto_la_SOURCES += x509/x509_utl.c
 libcrypto_la_SOURCES += x509/x509_v3.c
+libcrypto_la_SOURCES += x509/x509_verify.c
 libcrypto_la_SOURCES += x509/x509_vfy.c
 libcrypto_la_SOURCES += x509/x509_vpm.c
 libcrypto_la_SOURCES += x509/x509cset.c
@@ -962,4 +978,6 @@ libcrypto_la_SOURCES += x509/x_all.c
 noinst_HEADERS += x509/ext_dat.h
 noinst_HEADERS += x509/pcy_int.h
 noinst_HEADERS += x509/vpm_int.h
+noinst_HEADERS += x509/x509_internal.h
+noinst_HEADERS += x509/x509_issuer_cache.h
 noinst_HEADERS += x509/x509_lcl.h

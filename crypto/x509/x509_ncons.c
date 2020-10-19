@@ -1,4 +1,4 @@
-/* $OpenBSD: x509_ncons.c,v 1.1 2020/06/04 15:19:31 jsing Exp $ */
+/* $OpenBSD: x509_ncons.c,v 1.4 2020/09/16 18:12:06 beck Exp $ */
 /* Written by Dr Stephen N Henson (steve@openssl.org) for the OpenSSL
  * project.
  */
@@ -345,10 +345,8 @@ NAME_CONSTRAINTS_check(X509 *x, NAME_CONSTRAINTS *nc)
 		if (r != X509_V_OK)
 			return r;
 	}
-
 	return X509_V_OK;
 }
-
 static int
 nc_match(GENERAL_NAME *gen, NAME_CONSTRAINTS *nc)
 {

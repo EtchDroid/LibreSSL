@@ -2,6 +2,7 @@ include $(top_srcdir)/Makefile.am.common
 
 AM_CPPFLAGS += -I $(top_srcdir)/crypto/modes
 AM_CPPFLAGS += -I $(top_srcdir)/crypto/asn1
+AM_CPPFLAGS += -I $(top_srcdir)/crypto/x509
 AM_CPPFLAGS += -I $(top_srcdir)/ssl
 AM_CPPFLAGS += -I $(top_srcdir)/tls
 AM_CPPFLAGS += -I $(top_srcdir)/apps/openssl
@@ -145,6 +146,11 @@ cmstest_SOURCES = cmstest.c
 TESTS += configtest
 check_PROGRAMS += configtest
 configtest_SOURCES = configtest.c
+
+# constraints
+TESTS += constraints
+check_PROGRAMS += constraints
+constraints_SOURCES = constraints.c
 
 # cts128test
 TESTS += cts128test
@@ -472,6 +478,16 @@ verifytest_SOURCES = verifytest.c
 TESTS += x25519test
 check_PROGRAMS += x25519test
 x25519test_SOURCES = x25519test.c
+
+# x509attribute
+TESTS += x509attribute
+check_PROGRAMS += x509attribute
+x509attribute_SOURCES = x509attribute.c
+
+# x509_info
+TESTS += x509_info
+check_PROGRAMS += x509_info
+x509_info_SOURCES = x509_info.c
 
 # x509name
 TESTS += x509name

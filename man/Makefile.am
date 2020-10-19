@@ -98,10 +98,13 @@ dist_man3_MANS += SSL_new.3
 dist_man3_MANS += SSL_num_renegotiations.3
 dist_man3_MANS += SSL_pending.3
 dist_man3_MANS += SSL_read.3
+dist_man3_MANS += SSL_read_early_data.3
 dist_man3_MANS += SSL_renegotiate.3
 dist_man3_MANS += SSL_rstate_string.3
 dist_man3_MANS += SSL_session_reused.3
+dist_man3_MANS += SSL_set1_host.3
 dist_man3_MANS += SSL_set1_param.3
+dist_man3_MANS += SSL_set_SSL_CTX.3
 dist_man3_MANS += SSL_set_bio.3
 dist_man3_MANS += SSL_set_connect_state.3
 dist_man3_MANS += SSL_set_fd.3
@@ -473,6 +476,7 @@ dist_man3_MANS += i2d_CMS_bio_stream.3
 dist_man3_MANS += i2d_PKCS7_bio_stream.3
 dist_man3_MANS += lh_new.3
 dist_man3_MANS += lh_stats.3
+dist_man3_MANS += x509_verify.3
 dist_man3_MANS += tls_accept_socket.3
 dist_man3_MANS += tls_client.3
 dist_man3_MANS += tls_config_ocsp_require_stapling.3
@@ -2278,6 +2282,14 @@ install-data-hook:
 	ln -sf "SSL_num_renegotiations.3" "$(DESTDIR)$(mandir)/man3/SSL_clear_num_renegotiations.3"
 	ln -sf "SSL_num_renegotiations.3" "$(DESTDIR)$(mandir)/man3/SSL_total_renegotiations.3"
 	ln -sf "SSL_read.3" "$(DESTDIR)$(mandir)/man3/SSL_peek.3"
+	ln -sf "SSL_read_early_data.3" "$(DESTDIR)$(mandir)/man3/SSL_CTX_get_max_early_data.3"
+	ln -sf "SSL_read_early_data.3" "$(DESTDIR)$(mandir)/man3/SSL_CTX_set_max_early_data.3"
+	ln -sf "SSL_read_early_data.3" "$(DESTDIR)$(mandir)/man3/SSL_SESSION_get_max_early_data.3"
+	ln -sf "SSL_read_early_data.3" "$(DESTDIR)$(mandir)/man3/SSL_SESSION_set_max_early_data.3"
+	ln -sf "SSL_read_early_data.3" "$(DESTDIR)$(mandir)/man3/SSL_get_early_data_status.3"
+	ln -sf "SSL_read_early_data.3" "$(DESTDIR)$(mandir)/man3/SSL_get_max_early_data.3"
+	ln -sf "SSL_read_early_data.3" "$(DESTDIR)$(mandir)/man3/SSL_set_max_early_data.3"
+	ln -sf "SSL_read_early_data.3" "$(DESTDIR)$(mandir)/man3/SSL_write_early_data.3"
 	ln -sf "SSL_renegotiate.3" "$(DESTDIR)$(mandir)/man3/SSL_renegotiate_abbreviated.3"
 	ln -sf "SSL_renegotiate.3" "$(DESTDIR)$(mandir)/man3/SSL_renegotiate_pending.3"
 	ln -sf "SSL_rstate_string.3" "$(DESTDIR)$(mandir)/man3/SSL_rstate_string_long.3"
@@ -3089,6 +3101,16 @@ install-data-hook:
 	ln -sf "tls_read.3" "$(DESTDIR)$(mandir)/man3/tls_handshake.3"
 	ln -sf "tls_read.3" "$(DESTDIR)$(mandir)/man3/tls_reset.3"
 	ln -sf "tls_read.3" "$(DESTDIR)$(mandir)/man3/tls_write.3"
+	ln -sf "x509_verify.3" "$(DESTDIR)$(mandir)/man3/x509_verify_ctx_chain.3"
+	ln -sf "x509_verify.3" "$(DESTDIR)$(mandir)/man3/x509_verify_ctx_error_depth.3"
+	ln -sf "x509_verify.3" "$(DESTDIR)$(mandir)/man3/x509_verify_ctx_error_string.3"
+	ln -sf "x509_verify.3" "$(DESTDIR)$(mandir)/man3/x509_verify_ctx_free.3"
+	ln -sf "x509_verify.3" "$(DESTDIR)$(mandir)/man3/x509_verify_ctx_new.3"
+	ln -sf "x509_verify.3" "$(DESTDIR)$(mandir)/man3/x509_verify_ctx_set_intermediates.3"
+	ln -sf "x509_verify.3" "$(DESTDIR)$(mandir)/man3/x509_verify_ctx_set_max_chains.3"
+	ln -sf "x509_verify.3" "$(DESTDIR)$(mandir)/man3/x509_verify_ctx_set_max_depth.3"
+	ln -sf "x509_verify.3" "$(DESTDIR)$(mandir)/man3/x509_verify_ctx_set_max_signatures.3"
+	ln -sf "x509_verify.3" "$(DESTDIR)$(mandir)/man3/x509_verify_ctx_set_purpose.3"
 
 uninstall-local:
 	-rm -f "$(DESTDIR)$(mandir)/man3/ACCESS_DESCRIPTION_free.3"
@@ -4881,6 +4903,14 @@ uninstall-local:
 	-rm -f "$(DESTDIR)$(mandir)/man3/SSL_clear_num_renegotiations.3"
 	-rm -f "$(DESTDIR)$(mandir)/man3/SSL_total_renegotiations.3"
 	-rm -f "$(DESTDIR)$(mandir)/man3/SSL_peek.3"
+	-rm -f "$(DESTDIR)$(mandir)/man3/SSL_CTX_get_max_early_data.3"
+	-rm -f "$(DESTDIR)$(mandir)/man3/SSL_CTX_set_max_early_data.3"
+	-rm -f "$(DESTDIR)$(mandir)/man3/SSL_SESSION_get_max_early_data.3"
+	-rm -f "$(DESTDIR)$(mandir)/man3/SSL_SESSION_set_max_early_data.3"
+	-rm -f "$(DESTDIR)$(mandir)/man3/SSL_get_early_data_status.3"
+	-rm -f "$(DESTDIR)$(mandir)/man3/SSL_get_max_early_data.3"
+	-rm -f "$(DESTDIR)$(mandir)/man3/SSL_set_max_early_data.3"
+	-rm -f "$(DESTDIR)$(mandir)/man3/SSL_write_early_data.3"
 	-rm -f "$(DESTDIR)$(mandir)/man3/SSL_renegotiate_abbreviated.3"
 	-rm -f "$(DESTDIR)$(mandir)/man3/SSL_renegotiate_pending.3"
 	-rm -f "$(DESTDIR)$(mandir)/man3/SSL_rstate_string_long.3"
@@ -5692,3 +5722,13 @@ uninstall-local:
 	-rm -f "$(DESTDIR)$(mandir)/man3/tls_handshake.3"
 	-rm -f "$(DESTDIR)$(mandir)/man3/tls_reset.3"
 	-rm -f "$(DESTDIR)$(mandir)/man3/tls_write.3"
+	-rm -f "$(DESTDIR)$(mandir)/man3/x509_verify_ctx_chain.3"
+	-rm -f "$(DESTDIR)$(mandir)/man3/x509_verify_ctx_error_depth.3"
+	-rm -f "$(DESTDIR)$(mandir)/man3/x509_verify_ctx_error_string.3"
+	-rm -f "$(DESTDIR)$(mandir)/man3/x509_verify_ctx_free.3"
+	-rm -f "$(DESTDIR)$(mandir)/man3/x509_verify_ctx_new.3"
+	-rm -f "$(DESTDIR)$(mandir)/man3/x509_verify_ctx_set_intermediates.3"
+	-rm -f "$(DESTDIR)$(mandir)/man3/x509_verify_ctx_set_max_chains.3"
+	-rm -f "$(DESTDIR)$(mandir)/man3/x509_verify_ctx_set_max_depth.3"
+	-rm -f "$(DESTDIR)$(mandir)/man3/x509_verify_ctx_set_max_signatures.3"
+	-rm -f "$(DESTDIR)$(mandir)/man3/x509_verify_ctx_set_purpose.3"

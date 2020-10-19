@@ -734,6 +734,7 @@ set(
 	x509/x509_bitst.c
 	x509/x509_cmp.c
 	x509/x509_conf.c
+	x509/x509_constraints.c
 	x509/x509_cpols.c
 	x509/x509_crld.c
 	x509/x509_d2.c
@@ -746,6 +747,7 @@ set(
 	x509/x509_ia5.c
 	x509/x509_info.c
 	x509/x509_int.c
+	x509/x509_issuer_cache.c
 	x509/x509_lib.c
 	x509/x509_lu.c
 	x509/x509_ncons.c
@@ -767,6 +769,7 @@ set(
 	x509/x509_txt.c
 	x509/x509_utl.c
 	x509/x509_v3.c
+	x509/x509_verify.c
 	x509/x509_vfy.c
 	x509/x509_vpm.c
 	x509/x509cset.c
